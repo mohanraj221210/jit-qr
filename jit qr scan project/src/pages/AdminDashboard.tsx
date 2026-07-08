@@ -19,6 +19,7 @@ import {
   Search,
   ExternalLink,
   AlignLeft,
+  Menu,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCirculars } from '../context/CircularContext';
@@ -388,6 +389,9 @@ const AdminDashboard: React.FC = () => {
   const [previewTarget, setPreviewTarget] = useState<Circular | undefined>();
   const [search, setSearch] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const closeSidebar = () => setSidebarOpen(false);
 
   const totalCirculars = circulars.length;
   const activeCirculars = circulars.filter((c) => c.status === 'active').length;
@@ -420,28 +424,36 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="admin-layout">
+      {/* Mobile overlay backdrop */}
+      {sidebarOpen && (
+        <div className="sidebar-backdrop" onClick={closeSidebar} />
+      )}
+
       {/* Sidebar */}
-      <aside className="sidebar">
+      <aside className={`sidebar${sidebarOpen ? ' sidebar-open' : ''}`}>
         <div className="sidebar-brand">
           <GraduationCap size={28} />
           <span>JIT Portal</span>
+          <button className="sidebar-close-btn" onClick={closeSidebar}>
+            <X size={20} />
+          </button>
         </div>
         <nav className="sidebar-nav">
           <button
             className={`nav-item${activeTab === 'dashboard' ? ' active' : ''}`}
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => { setActiveTab('dashboard'); closeSidebar(); }}
           >
             <LayoutDashboard size={20} /> Dashboard
           </button>
           <button
             className={`nav-item${activeTab === 'circulars' ? ' active' : ''}`}
-            onClick={() => setActiveTab('circulars')}
+            onClick={() => { setActiveTab('circulars'); closeSidebar(); }}
           >
             <FileText size={20} /> Circulars
           </button>
           <button
             className="nav-item"
-            onClick={() => navigate('/departments')}
+            onClick={() => { navigate('/departments'); closeSidebar(); }}
           >
             <Users size={20} /> Departments
           </button>
@@ -456,13 +468,18 @@ const AdminDashboard: React.FC = () => {
         {/* Header */}
         <header className="admin-header">
           <div className="header-left">
-            <h1 className="page-title">
-              {activeTab === 'dashboard' ? 'Dashboard Overview' : 'Manage Circulars'}
-            </h1>
-            <p className="page-sub">Welcome back, Super Admin</p>
+            <button className="hamburger-btn" onClick={() => setSidebarOpen(true)}>
+              <Menu size={22} />
+            </button>
+            <div>
+              <h1 className="page-title">
+                {activeTab === 'dashboard' ? 'Dashboard Overview' : 'Manage Circulars'}
+              </h1>
+              <p className="page-sub">Welcome back, Super Admin</p>
+            </div>
           </div>
           <button className="btn-primary upload-trigger" onClick={() => setShowUpload(true)}>
-            <Plus size={18} /> New Circular
+            <Plus size={18} /> <span className="btn-label">New Circular</span>
           </button>
         </header>
 
@@ -474,7 +491,7 @@ const AdminDashboard: React.FC = () => {
               <StatCard label="Total Circulars" value={totalCirculars} icon={<FileText size={24} />} color="blue" />
               <StatCard label="Active" value={activeCirculars} icon={<CheckCircle size={24} />} color="green" />
               <StatCard label="Expired" value={expiredCirculars} icon={<XCircle size={24} />} color="red" />
-              <StatCard label="Departments" value={8} icon={<Users size={24} />} color="purple" />
+              <StatCard label="Departments" value={DEPARTMENTS.length} icon={<Users size={24} />} color="purple" />
             </div>
 
             {/* Recent Uploads */}
