@@ -5,13 +5,13 @@ import { DEPARTMENTS, DEPARTMENT_FULL_NAMES } from '../types';
 import { useCirculars } from '../context/CircularContext';
 
 const DEPT_COLORS: Record<string, string> = {
-  IT:          '#2563EB',
-  CSE:         '#7C3AED',
-  ECE:         '#0891B2',
-  'AI&DS':     '#059669',
-  Mechanical:  '#D97706',
-  CSBS:        '#BE185D',
-  MBA:         '#0F766E',
+  IT: '#2563EB',
+  CSE: '#7C3AED',
+  ECE: '#0891B2',
+  'AI&DS': '#059669',
+  Mechanical: '#D97706',
+  CSBS: '#BE185D',
+  MBA: '#0F766E',
 };
 
 const DepartmentsPage: React.FC = () => {
