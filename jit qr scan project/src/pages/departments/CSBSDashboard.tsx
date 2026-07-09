@@ -234,7 +234,7 @@ const CSBSDashboard: React.FC = () => {
               <div className="csbs-push-pin pin-red" style={{ top: -6 }} />
               Innovate.<br/>Integrate.<br/>Lead.
             </div>
-            <div style={{ margin: 'auto' }}>
+            <div style={{ margin: 'auto', width: '100%', maxWidth: '340px' }}>
               <div className="csbs-paper csbs-torn-bottom">
                 <div className="csbs-push-pin pin-gold" />
                 <div className="csbs-paper-icon">
@@ -261,7 +261,7 @@ const CSBSDashboard: React.FC = () => {
             </div>
           </>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="csbs-papers-grid">
             {filteredCirculars.map((c) => {
               const rot = getRotation(c.id);
               const prio = getPriority(c);

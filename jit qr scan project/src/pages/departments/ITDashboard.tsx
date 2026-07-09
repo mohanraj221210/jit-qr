@@ -212,8 +212,8 @@ const ITDashboard: React.FC = () => {
               <div className="it-push-pin pin-red" style={{ top: -6 }} />
               Stay Updated<br/>Stay Ahead!
             </div>
-            <div style={{ margin: 'auto' }}>
-              <div className="it-paper it-torn-bottom">
+            <div style={{ margin: 'auto', width: '100%', maxWidth: '340px' }}>
+              <div className="it-paper it-torn-bottom" style={{ backgroundColor: 'white', border: '1px solid #ddd', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                 <div className="it-push-pin pin-blue" />
                 <div className="it-paper-icon">
                   <FileText size={48} strokeWidth={1.5} />
@@ -239,7 +239,7 @@ const ITDashboard: React.FC = () => {
             </div>
           </>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="it-papers-grid">
             {filteredCirculars.map((c) => {
               const rot = getRotation(c.id);
               const prio = getPriority(c);

@@ -228,7 +228,7 @@ const ECEDashboard: React.FC = () => {
               <div className="ec-push-pin pin-red" style={{ top: -6 }} />
               Innovate.<br/>Connect.<br/>Communicate.
             </div>
-            <div style={{ margin: 'auto' }}>
+            <div style={{ margin: 'auto', width: '100%', maxWidth: '340px' }}>
               <div className="ec-paper ec-torn-bottom">
                 <div className="ec-push-pin pin-orange" />
                 <div className="ec-paper-icon">
@@ -255,7 +255,7 @@ const ECEDashboard: React.FC = () => {
             </div>
           </>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="ec-papers-grid">
             {filteredCirculars.map((c) => {
               const rot = getRotation(c.id);
               const prio = getPriority(c);

@@ -234,7 +234,7 @@ const CSEDashboard: React.FC = () => {
               <div className="cs-push-pin pin-red" style={{ top: -6 }} />
               Code.<br/>Compile.<br/>Create.
             </div>
-            <div style={{ margin: 'auto' }}>
+            <div style={{ margin: 'auto', width: '100%', maxWidth: '340px' }}>
               <div className="cs-paper cs-torn-bottom">
                 <div className="cs-push-pin pin-green" />
                 <div className="cs-paper-icon">
@@ -261,7 +261,7 @@ const CSEDashboard: React.FC = () => {
             </div>
           </>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="cs-papers-grid">
             {filteredCirculars.map((c) => {
               const rot = getRotation(c.id);
               const prio = getPriority(c);

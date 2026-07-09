@@ -550,3 +550,34 @@
   cursor: pointer;
   padding: 4px;
 }
+
+/* Responsive Grid for Notice Board Papers */
+.cs-papers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 32px;
+  width: 100%;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .cs-papers-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cs-cork-board {
+    border-width: 8px !important;
+    padding: 16px !important;
+    min-height: 400px;
+  }
+  .cs-cork-board::before {
+    top: -8px; left: -8px; right: -8px; bottom: -8px;
+  }
+  .cs-papers-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}

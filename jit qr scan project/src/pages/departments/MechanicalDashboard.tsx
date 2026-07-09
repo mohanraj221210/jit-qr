@@ -229,7 +229,7 @@ const MechanicalDashboard: React.FC = () => {
               <div className="mech-push-pin pin-red" style={{ top: -6 }} />
               Design.<br/>Build.<br/>Innovate.
             </div>
-            <div style={{ margin: 'auto' }}>
+            <div style={{ margin: 'auto', width: '100%', maxWidth: '340px' }}>
               <div className="mech-paper mech-torn-bottom">
                 <div className="mech-push-pin pin-orange" />
                 <div className="mech-paper-icon">
@@ -256,7 +256,7 @@ const MechanicalDashboard: React.FC = () => {
             </div>
           </>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="mech-papers-grid">
             {filteredCirculars.map((c) => {
               const rot = getRotation(c.id);
               const prio = getPriority(c);

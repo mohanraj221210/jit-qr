@@ -227,7 +227,7 @@ const MBADashboard: React.FC = () => {
               <div className="mba-push-pin pin-red" style={{ top: -6 }} />
               Lead.<br/>Innovate.<br/>Succeed.
             </div>
-            <div style={{ margin: 'auto' }}>
+            <div style={{ margin: 'auto', width: '100%', maxWidth: '340px' }}>
               <div className="mba-paper mba-torn-bottom">
                 <div className="mba-push-pin pin-gold" />
                 <div className="mba-paper-icon">
@@ -254,7 +254,7 @@ const MBADashboard: React.FC = () => {
             </div>
           </>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="mba-papers-grid">
             {filteredCirculars.map((c) => {
               const rot = getRotation(c.id);
               const prio = getPriority(c);

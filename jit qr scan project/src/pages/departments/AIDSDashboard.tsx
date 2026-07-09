@@ -224,7 +224,7 @@ const AIDSDashboard: React.FC = () => {
               <div className="ai-push-pin pin-red" style={{ top: -6 }} />
               Keep Learning<br/>🚀
             </div>
-            <div style={{ margin: 'auto' }}>
+            <div style={{ margin: 'auto', width: '100%', maxWidth: '340px' }}>
               <div className="ai-paper ai-torn-bottom">
                 <div className="ai-push-pin pin-cyan" />
                 <div className="ai-paper-icon">
@@ -251,7 +251,7 @@ const AIDSDashboard: React.FC = () => {
             </div>
           </>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="ai-papers-grid">
             {filteredCirculars.map((c) => {
               const rot = getRotation(c.id);
               const prio = getPriority(c);
