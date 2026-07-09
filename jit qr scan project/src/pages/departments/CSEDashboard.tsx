@@ -227,6 +227,7 @@ const CSEDashboard: React.FC = () => {
 
       {/* ────────────── CORK BOARD ────────────── */}
       <main className="cs-cork-board">
+        <div className="cs-board-glass" />
         {filteredCirculars.length === 0 ? (
           <>
             <div className="cs-sticky-note">

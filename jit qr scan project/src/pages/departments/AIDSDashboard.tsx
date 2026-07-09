@@ -217,6 +217,7 @@ const AIDSDashboard: React.FC = () => {
 
       {/* ────────────── CORK BOARD ────────────── */}
       <main className="ai-cork-board">
+        <div className="ai-board-glass" />
         {filteredCirculars.length === 0 ? (
           <>
             <div className="ai-sticky-note">

@@ -227,6 +227,7 @@ const CSBSDashboard: React.FC = () => {
 
       {/* ────────────── CORK BOARD ────────────── */}
       <main className="csbs-cork-board">
+        <div className="csbs-board-glass" />
         {filteredCirculars.length === 0 ? (
           <>
             <div className="csbs-sticky-note">

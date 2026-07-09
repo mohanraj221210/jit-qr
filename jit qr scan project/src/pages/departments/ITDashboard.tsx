@@ -205,6 +205,7 @@ const ITDashboard: React.FC = () => {
 
       {/* ────────────── CORK BOARD ────────────── */}
       <main className="it-cork-board">
+        <div className="it-board-glass" />
         {filteredCirculars.length === 0 ? (
           <>
             <div className="it-sticky-note">

@@ -221,6 +221,7 @@ const ECEDashboard: React.FC = () => {
 
       {/* ────────────── CORK BOARD ────────────── */}
       <main className="ec-cork-board">
+        <div className="ec-board-glass" />
         {filteredCirculars.length === 0 ? (
           <>
             <div className="ec-sticky-note">

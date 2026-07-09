@@ -220,6 +220,7 @@ const MBADashboard: React.FC = () => {
 
       {/* ────────────── CORK BOARD ────────────── */}
       <main className="mba-cork-board">
+        <div className="mba-board-glass" />
         {filteredCirculars.length === 0 ? (
           <>
             <div className="mba-sticky-note">

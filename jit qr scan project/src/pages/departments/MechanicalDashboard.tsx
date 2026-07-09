@@ -222,6 +222,7 @@ const MechanicalDashboard: React.FC = () => {
 
       {/* ────────────── CORK BOARD ────────────── */}
       <main className="mech-cork-board">
+        <div className="mech-board-glass" />
         {filteredCirculars.length === 0 ? (
           <>
             <div className="mech-sticky-note">
