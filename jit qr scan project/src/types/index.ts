@@ -27,6 +27,17 @@ export const DEPARTMENT_FULL_NAMES: Record<Department, string> = {
   MBA: 'Master of Business Administration',
 };
 
+export const DEPT_ROUTES: Record<Department, string> = {
+  IT: '/it',
+  CSE: '/cse',
+  ECE: '/ece',
+  'AI&DS': '/aids',
+  Mechanical: '/mechanical',
+  CSBS: '/csbs',
+  MBA: '/mba',
+};
+
+
 export type CircularStatus = 'active' | 'expired';
 
 export type Circular = {

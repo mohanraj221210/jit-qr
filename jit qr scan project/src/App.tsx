@@ -5,8 +5,14 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { CircularProvider } from './context/CircularContext';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
-import DeptDashboard from './pages/DeptDashboard';
 import DepartmentsPage from './pages/DepartmentsPage';
+import ITDashboard from './pages/departments/ITDashboard';
+import CSEDashboard from './pages/departments/CSEDashboard';
+import ECEDashboard from './pages/departments/ECEDashboard';
+import AIDSDashboard from './pages/departments/AIDSDashboard';
+import MechanicalDashboard from './pages/departments/MechanicalDashboard';
+import CSBSDashboard from './pages/departments/CSBSDashboard';
+import MBADashboard from './pages/departments/MBADashboard';
 
 /* Protected Route for Admin */
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -31,7 +37,13 @@ function AppRoutes() {
         }
       />
       <Route path="/departments" element={<DepartmentsPage />} />
-      <Route path="/dept/:deptId" element={<DeptDashboard />} />
+      <Route path="/it" element={<ITDashboard />} />
+      <Route path="/cse" element={<CSEDashboard />} />
+      <Route path="/ece" element={<ECEDashboard />} />
+      <Route path="/aids" element={<AIDSDashboard />} />
+      <Route path="/mechanical" element={<MechanicalDashboard />} />
+      <Route path="/csbs" element={<CSBSDashboard />} />
+      <Route path="/mba" element={<MBADashboard />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

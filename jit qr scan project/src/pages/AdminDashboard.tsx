@@ -20,12 +20,15 @@ import {
   ExternalLink,
   AlignLeft,
   Menu,
+  BarChart3,
+  Filter,
+  PieChart,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCirculars } from '../context/CircularContext';
-import { DEPARTMENTS, DEPARTMENT_FULL_NAMES } from '../types';
+import { DEPARTMENTS, DEPARTMENT_FULL_NAMES, DEPT_ROUTES } from '../types';
 import type { Department, Circular } from '../types';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, isToday, isThisWeek, isThisMonth } from 'date-fns';
 
 /* ───────────── Helpers ───────────── */
 const generateId = () => `cir_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -383,7 +386,9 @@ const AdminDashboard: React.FC = () => {
   const { circulars, removeCircular } = useCirculars();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'circulars'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'circulars' | 'analytics'>('dashboard');
+  const [analyticsStatus, setAnalyticsStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [analyticsTime, setAnalyticsTime] = useState<'all' | 'today' | 'weekly' | 'monthly'>('all');
   const [showUpload, setShowUpload] = useState(false);
   const [editTarget, setEditTarget] = useState<Circular | undefined>();
   const [previewTarget, setPreviewTarget] = useState<Circular | undefined>();
@@ -446,6 +451,12 @@ const AdminDashboard: React.FC = () => {
             <LayoutDashboard size={20} /> Dashboard
           </button>
           <button
+            className={`nav-item${activeTab === 'analytics' ? ' active' : ''}`}
+            onClick={() => { setActiveTab('analytics'); closeSidebar(); }}
+          >
+            <BarChart3 size={20} /> Analytics
+          </button>
+          <button
             className={`nav-item${activeTab === 'circulars' ? ' active' : ''}`}
             onClick={() => { setActiveTab('circulars'); closeSidebar(); }}
           >
@@ -473,7 +484,8 @@ const AdminDashboard: React.FC = () => {
             </button>
             <div>
               <h1 className="page-title">
-                {activeTab === 'dashboard' ? 'Dashboard Overview' : 'Manage Circulars'}
+                {activeTab === 'dashboard' ? 'Dashboard Overview' : 
+                 activeTab === 'analytics' ? 'Analytics & Reports' : 'Manage Circulars'}
               </h1>
               <p className="page-sub">Welcome back, Super Admin</p>
             </div>
@@ -542,7 +554,7 @@ const AdminDashboard: React.FC = () => {
                     <button
                       key={d}
                       className="dept-link-card"
-                      onClick={() => navigate(`/dept/${d}`)}
+                      onClick={() => navigate(DEPT_ROUTES[d])}
                     >
                       <span className="dept-link-name">{d}</span>
                       <span className="dept-link-count">{count} active</span>
@@ -550,6 +562,147 @@ const AdminDashboard: React.FC = () => {
                     </button>
                   );
                 })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <div className="analytics-content">
+            <div className="analytics-toolbar">
+              <div className="analytics-filters">
+                <div className="filter-group">
+                  <label><Filter size={14} /> Status</label>
+                  <select 
+                    value={analyticsStatus} 
+                    onChange={(e) => setAnalyticsStatus(e.target.value as any)}
+                  >
+                    <option value="all">All Notices</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Expired</option>
+                  </select>
+                </div>
+                <div className="filter-group">
+                  <label><Calendar size={14} /> Time Period</label>
+                  <select 
+                    value={analyticsTime} 
+                    onChange={(e) => setAnalyticsTime(e.target.value as any)}
+                  >
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="weekly">This Week</option>
+                    <option value="monthly">This Month</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="card analytics-chart-card">
+              <div className="card-header">
+                <h2 className="card-title">Department-wise Uploads</h2>
+              </div>
+              <div className="chart-body">
+                {(() => {
+                  // Filter logic
+                  const filteredAnalytics = circulars.filter(c => {
+                    // Status filter
+                    if (analyticsStatus === 'active' && c.status !== 'active') return false;
+                    if (analyticsStatus === 'inactive' && c.status !== 'expired') return false;
+                    
+                    // Time filter
+                    const uploadDate = new Date(c.uploadDate);
+                    if (analyticsTime === 'today' && !isToday(uploadDate)) return false;
+                    if (analyticsTime === 'weekly' && !isThisWeek(uploadDate)) return false;
+                    if (analyticsTime === 'monthly' && !isThisMonth(uploadDate)) return false;
+                    
+                    return true;
+                  });
+
+                  // Aggregation
+                  const deptCounts = DEPARTMENTS.map(d => {
+                    const count = filteredAnalytics.filter(c => c.departments.includes(d)).length;
+                    return { dept: d, name: DEPARTMENT_FULL_NAMES[d], count };
+                  });
+
+                  const maxCount = Math.max(...deptCounts.map(d => d.count), 1);
+                  const totalCount = filteredAnalytics.length;
+                  const totalSlices = deptCounts.reduce((sum, item) => sum + item.count, 0);
+
+                  const PIE_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316'];
+                  let cumulativePercent = 0;
+                  const pieGradientArgs = deptCounts.map((item, i) => {
+                    if (totalSlices === 0 || item.count === 0) return null;
+                    const percent = (item.count / totalSlices) * 100;
+                    const start = cumulativePercent;
+                    cumulativePercent += percent;
+                    const color = PIE_COLORS[i % PIE_COLORS.length];
+                    return `${color} ${start}% ${cumulativePercent}%`;
+                  }).filter(Boolean).join(', ');
+
+                  const pieStyle = totalSlices > 0 && pieGradientArgs
+                    ? { background: `conic-gradient(${pieGradientArgs})` }
+                    : { background: '#e2e8f0' };
+
+                  return (
+                    <>
+                      <div className="analytics-summary">
+                        <div className="summary-box">
+                          <h3>Total Matches</h3>
+                          <div className="summary-val">{totalCount}</div>
+                        </div>
+                        {/* Could add more summary boxes if needed */}
+                      </div>
+                      
+                      <div className="analytics-charts-grid">
+                        {/* Bar Chart Column */}
+                        <div className="chart-col">
+                          <h3 className="chart-col-title"><BarChart3 size={16}/> Bar Chart</h3>
+                          <div className="bar-chart-wrap">
+                            {deptCounts.map(item => (
+                              <div className="bar-row" key={item.dept}>
+                                <div className="bar-label" title={item.name}>{item.dept}</div>
+                                <div className="bar-track">
+                                  <div 
+                                    className="bar-fill" 
+                                    style={{ width: `${(item.count / maxCount) * 100}%` }}
+                                  >
+                                    {item.count > 0 && <span className="bar-value-inner">{item.count}</span>}
+                                  </div>
+                                </div>
+                                <div className="bar-value-outer">{item.count}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Pie Chart Column */}
+                        <div className="chart-col pie-col">
+                          <h3 className="chart-col-title"><PieChart size={16}/> Distribution</h3>
+                          <div className="pie-container">
+                            <div className="pie-chart" style={pieStyle}></div>
+                            {totalSlices > 0 ? (
+                              <div className="pie-legend">
+                                {deptCounts.map((item, i) => {
+                                  if (item.count === 0) return null;
+                                  return (
+                                    <div className="legend-item" key={item.dept}>
+                                      <span className="legend-color" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}></span>
+                                      <span className="legend-label">{item.dept}</span>
+                                      <span className="legend-value">{item.count} ({((item.count / totalSlices) * 100).toFixed(0)}%)</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <p className="no-data-msg">No data available for selected filters.</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>

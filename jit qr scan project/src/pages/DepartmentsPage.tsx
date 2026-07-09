@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, ExternalLink } from 'lucide-react';
-import { DEPARTMENTS, DEPARTMENT_FULL_NAMES } from '../types';
+import { DEPARTMENTS, DEPARTMENT_FULL_NAMES, DEPT_ROUTES } from '../types';
 import { useCirculars } from '../context/CircularContext';
 
 const DEPT_COLORS: Record<string, string> = {
@@ -45,7 +45,7 @@ const DepartmentsPage: React.FC = () => {
                 key={d}
                 className="dept-card"
                 style={{ '--dept-color': color } as React.CSSProperties}
-                onClick={() => navigate(`/dept/${d}`)}
+                onClick={() => navigate(DEPT_ROUTES[d])}
               >
                 <div className="dept-card-top">
                   <span className="dept-card-short">{d}</span>
