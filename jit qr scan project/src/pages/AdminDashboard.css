@@ -282,6 +282,12 @@
   justify-content: space-between;
   padding: 0 16px;
   box-shadow: var(--ad-shadow-sm);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.ad-topbar-scrolled {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-bottom-color: rgba(22, 58, 112, 0.1);
 }
 
 .ad-topbar-left {
@@ -1733,3 +1739,61 @@
 @media (min-width: 1920px) {
   .ad-page-content { max-width: 1600px; }
 }
+
+/* ─── PAGINATION STYLES ─── */
+.ad-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  background: white;
+  padding: 12px 20px;
+  border-radius: var(--ad-radius-sm);
+  border: 1px solid var(--ad-border);
+  box-shadow: var(--ad-shadow-sm);
+}
+
+.ad-page-btn {
+  background: white;
+  border: 1.5px solid var(--ad-border);
+  color: var(--ad-text-2);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.ad-page-btn:hover:not(:disabled) {
+  background: var(--ad-bg);
+  color: var(--ad-navy);
+  border-color: var(--ad-navy-light);
+}
+
+.ad-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ad-page-info {
+  font-size: 13px;
+  color: var(--ad-text-2);
+}
+
+.ad-skeleton-row-bar {
+  height: 52px;
+  width: 100%;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: ad-shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes ad-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+

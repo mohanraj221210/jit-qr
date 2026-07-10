@@ -5,90 +5,191 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-import type { Circular, Department } from '../types';
-import {
-  getCirculars,
-  addCircular,
-  updateCircular,
-  deleteCircular,
-  checkAndExpireCirculars,
-} from '../utils/storage';
+import type { Circular, Department, NoticeUploadPayload } from '../types';
+import { noticeService } from '../services/notice.service';
+import toast from 'react-hot-toast';
+import { getAdminAuth } from '../utils/storage';
+import { useAuth } from './AuthContext';
+import { useLocation } from 'react-router-dom';
 
 interface CircularContextType {
   circulars: Circular[];
-  addNewCircular: (circular: Circular) => void;
-  editCircular: (circular: Circular) => void;
-  removeCircular: (id: string) => void;
+  loading: boolean;
+  page: number;
+  totalPages: number;
+  total: number;
+  setPage: (page: number) => void;
+  addNewCircular: (circular: NoticeUploadPayload) => Promise<void>;
+  editCircular: (id: string, circular: NoticeUploadPayload) => Promise<void>;
+  removeCircular: (id: string) => Promise<void>;
   getCircularsForDept: (dept: Department) => Circular[];
   refreshCirculars: () => void;
 }
 
 const CircularContext = createContext<CircularContextType>({
   circulars: [],
-  addNewCircular: () => {},
-  editCircular: () => {},
-  removeCircular: () => {},
+  loading: false,
+  page: 1,
+  totalPages: 1,
+  total: 0,
+  setPage: () => { },
+  addNewCircular: async () => { },
+  editCircular: async () => { },
+  removeCircular: async () => { },
   getCircularsForDept: () => [],
-  refreshCirculars: () => {},
+  refreshCirculars: () => { },
 });
 
 export const CircularProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
   const [circulars, setCirculars] = useState<Circular[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
-  const refreshCirculars = useCallback(() => {
-    checkAndExpireCirculars();
-    setCirculars(getCirculars());
+  // Cache/store all active circulars for department dashboards to read
+  const [deptCirculars, setDeptCirculars] = useState<Circular[]>([]);
+
+  const fetchPage = useCallback(async (pageNum: number) => {
+    setLoading(true);
+    try {
+      const result = await noticeService.getNotices(pageNum);
+      setCirculars(result.notices);
+      setTotalPages(result.totalPages);
+      setTotal(result.total);
+    } catch (err) {
+      console.error('Failed to fetch notices:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  // Fetch a larger set or poll in background for department views
+  const fetchDeptCirculars = useCallback(async () => {
+    try {
+      const result = await noticeService.getNotices(1);
+      let allNotices = [...result.notices];
+
+      if (result.totalPages > 1) {
+        const promises = [];
+        for (let p = 2; p <= Math.min(result.totalPages, 10); p++) {
+          promises.push(noticeService.getNotices(p));
+        }
+        const pages = await Promise.all(promises);
+        pages.forEach(p => {
+          allNotices = [...allNotices, ...p.notices];
+        });
+      }
+      setDeptCirculars(allNotices);
+    } catch (err) {
+      console.error('Failed to fetch dept circulars:', err);
+    }
+  }, []);
+
+  const pageRef = React.useRef(page);
   useEffect(() => {
-    refreshCirculars();
-    // Check expiry every 60 seconds
+    pageRef.current = page;
+  }, [page]);
+
+  const shouldFetchNotices = useCallback(() => {
+    const path = location.pathname;
+    if (path === '/login' || path === '/') return false;
+    if (path.startsWith('/admin') && !isAuthenticated && !getAdminAuth()) return false;
+    return true;
+  }, [location.pathname, isAuthenticated]);
+
+  const refreshCirculars = useCallback(() => {
+    if (!shouldFetchNotices()) return;
+    fetchPage(pageRef.current);
+    fetchDeptCirculars();
+  }, [fetchPage, fetchDeptCirculars, shouldFetchNotices]);
+
+  // Fetch page whenever page changes
+  useEffect(() => {
+    if (!shouldFetchNotices()) return;
+    fetchPage(page);
+  }, [page, fetchPage, shouldFetchNotices]);
+
+  // Fetch dept circulars on mount and set up periodic 60s reload
+  useEffect(() => {
+    if (!shouldFetchNotices()) return;
+    fetchDeptCirculars();
     const interval = setInterval(() => {
-      const changed = checkAndExpireCirculars();
-      if (changed) setCirculars(getCirculars());
+      if (!shouldFetchNotices()) return;
+      fetchDeptCirculars();
+      fetchPage(pageRef.current);
     }, 60000);
     return () => clearInterval(interval);
-  }, [refreshCirculars]);
+  }, [fetchDeptCirculars, fetchPage, shouldFetchNotices]);
 
   const addNewCircular = useCallback(
-    (circular: Circular) => {
-      addCircular(circular);
-      refreshCirculars();
+    async (noticeData: NoticeUploadPayload) => {
+      try {
+        await noticeService.createNotice(noticeData);
+        toast.success('Notice Created Successfully');
+        refreshCirculars();
+      } catch (err: any) {
+        const msg = err.response?.data?.message || 'Failed to create notice.';
+        toast.error(msg);
+        throw err;
+      }
     },
     [refreshCirculars]
   );
 
   const editCircular = useCallback(
-    (circular: Circular) => {
-      updateCircular(circular);
-      refreshCirculars();
+    async (id: string, noticeData: NoticeUploadPayload) => {
+      try {
+        await noticeService.updateNotice(id, noticeData);
+        toast.success('Notice Updated Successfully');
+        refreshCirculars();
+      } catch (err: any) {
+        const msg = err.response?.data?.message || 'Failed to update notice.';
+        toast.error(msg);
+        throw err;
+      }
     },
     [refreshCirculars]
   );
 
   const removeCircular = useCallback(
-    (id: string) => {
-      deleteCircular(id);
-      setCirculars((prev) => prev.filter((c) => c.id !== id));
+    async (id: string) => {
+      try {
+        await noticeService.deleteNotice(id);
+        toast.success('Notice Deleted Successfully');
+        refreshCirculars();
+      } catch (err: any) {
+        const msg = err.response?.data?.message || 'Failed to delete notice.';
+        toast.error(msg);
+        throw err;
+      }
     },
-    []
+    [refreshCirculars]
   );
 
   const getCircularsForDept = useCallback(
     (dept: Department): Circular[] => {
-      return circulars.filter(
+      // Read from the pre-aggregated deptCirculars list
+      return deptCirculars.filter(
         (c) => c.status === 'active' && c.departments.includes(dept)
       );
     },
-    [circulars]
+    [deptCirculars]
   );
 
   return (
     <CircularContext.Provider
       value={{
         circulars,
+        loading,
+        page,
+        totalPages,
+        total,
+        setPage,
         addNewCircular,
         editCircular,
         removeCircular,

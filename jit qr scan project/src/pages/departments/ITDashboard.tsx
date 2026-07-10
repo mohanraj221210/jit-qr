@@ -64,7 +64,7 @@ const ITDashboard: React.FC = () => {
   const { getCircularsForDept } = useCirculars();
 
   const allItCirculars = useMemo(() => {
-    return getCircularsForDept('IT').filter((c) => c.status === 'active');
+    return getCircularsForDept('Information Technology').filter((c) => c.status === 'active');
   }, [getCircularsForDept]);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -131,20 +131,34 @@ const ITDashboard: React.FC = () => {
     } catch (err) {}
   };
 
-  const downloadPdf = (base64: string, name: string) => {
-    const link = document.createElement('a');
-    link.href = base64;
-    link.download = name;
-    link.click();
+  const downloadFile = (file: string, name: string) => {
+    if (file.startsWith('data:')) {
+      const link = document.createElement('a');
+      link.href = file;
+      link.download = name;
+      link.click();
+    } else {
+      const link = document.createElement('a');
+      link.href = file;
+      link.target = '_blank';
+      link.download = name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
-  const openPdf = (base64: string) => {
-    const byteStr = atob(base64.split(',')[1]);
-    const ab = new ArrayBuffer(byteStr.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
-    const blob = new Blob([ab], { type: 'application/pdf' });
-    window.open(URL.createObjectURL(blob), '_blank');
+  const openPdf = (file: string) => {
+    if (file.startsWith('data:')) {
+      const byteStr = atob(file.split(',')[1]);
+      const ab = new ArrayBuffer(byteStr.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
+      const blob = new Blob([ab], { type: 'application/pdf' });
+      window.open(URL.createObjectURL(blob), '_blank');
+    } else {
+      window.open(file, '_blank');
+    }
   };
 
   useEffect(() => {
@@ -324,18 +338,33 @@ const ITDashboard: React.FC = () => {
               </div>
             </div>
             
+            {selectedNotice.posterImage && (
+              <div style={{ marginBottom: 20, textAlign: 'center', borderRadius: 6, overflow: 'hidden', border: '1px solid #E5E7EB', backgroundColor: '#f9fafb' }}>
+                <img
+                  src={selectedNotice.posterImage}
+                  alt={selectedNotice.title}
+                  style={{ maxWidth: '100%', maxHeight: '350px', objectFit: 'contain', display: 'block', margin: '0 auto' }}
+                />
+              </div>
+            )}
+
             <div style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-dark)', marginBottom: 24, whiteSpace: 'pre-wrap' }}>
               {selectedNotice.description}
             </div>
 
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {selectedNotice.posterImage && (
+                <button onClick={() => downloadFile(selectedNotice.posterImage!, selectedNotice.title + '.png')} style={{ flex: 1, padding: '10px', background: 'white', color: 'var(--text-dark)', border: '1px solid #D1D5DB', borderRadius: 4, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <Download size={16} /> Download Poster
+                </button>
+              )}
               {selectedNotice.pdfFile && (
                 <>
                   <button onClick={() => openPdf(selectedNotice.pdfFile!)} style={{ flex: 1, padding: '10px', background: 'var(--navy)', color: 'white', border: 'none', borderRadius: 4, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                     <FileText size={16} /> View PDF
                   </button>
-                  <button onClick={() => downloadPdf(selectedNotice.pdfFile!, selectedNotice.pdfName ?? 'notice.pdf')} style={{ flex: 1, padding: '10px', background: 'white', color: 'var(--text-dark)', border: '1px solid #D1D5DB', borderRadius: 4, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                    <Download size={16} /> Download
+                  <button onClick={() => downloadFile(selectedNotice.pdfFile!, selectedNotice.pdfName ?? 'notice.pdf')} style={{ flex: 1, padding: '10px', background: 'white', color: 'var(--text-dark)', border: '1px solid #D1D5DB', borderRadius: 4, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    <Download size={16} /> Download PDF
                   </button>
                 </>
               )}

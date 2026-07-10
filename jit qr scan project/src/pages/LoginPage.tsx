@@ -18,11 +18,9 @@ const LoginPage: React.FC = () => {
     setError('');
     setLoading(true);
     await new Promise((r) => setTimeout(r, 600));
-    const success = login(email.trim(), password);
+    const success = await login(email.trim(), password);
     if (success) {
       navigate('/admin');
-    } else {
-      setError('Invalid email or password. Please try again.');
     }
     setLoading(false);
   };
