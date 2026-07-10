@@ -5,7 +5,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { CircularProvider } from './context/CircularContext';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
-import DepartmentsPage from './pages/DepartmentsPage';
 import ITDashboard from './pages/departments/ITDashboard';
 import CSEDashboard from './pages/departments/CSEDashboard';
 import ECEDashboard from './pages/departments/ECEDashboard';
@@ -36,7 +35,6 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route path="/departments" element={<DepartmentsPage />} />
       <Route path="/it" element={<ITDashboard />} />
       <Route path="/cse" element={<CSEDashboard />} />
       <Route path="/ece" element={<ECEDashboard />} />

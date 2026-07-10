@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Search,
   Filter,
@@ -104,6 +104,33 @@ const CSBSDashboard: React.FC = () => {
       return matchSearch && matchCategory;
     });
   }, [allCsbsCirculars, searchQuery, selectedCategory]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory]);
+
+  const totalPages = Math.ceil(filteredCirculars.length / 10);
+
+  const paginatedCirculars = useMemo(() => {
+    return filteredCirculars.slice(0, currentPage * 10);
+  }, [filteredCirculars, currentPage]);
+
+  const observerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+        }
+      },
+      { rootMargin: '100px' }
+    );
+    if (observerRef.current) observer.observe(observerRef.current);
+    return () => observer.disconnect();
+  }, [totalPages]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -261,8 +288,9 @@ const CSBSDashboard: React.FC = () => {
             </div>
           </>
         ) : (
-          <div className="csbs-papers-grid">
-            {filteredCirculars.map((c) => {
+          <>
+            <div className="csbs-papers-grid">
+            {paginatedCirculars.map((c) => {
               const rot = getRotation(c.id);
               const prio = getPriority(c);
               const expires = formatDistanceToNow(new Date(c.expiryDate), { addSuffix: true });
@@ -296,8 +324,15 @@ const CSBSDashboard: React.FC = () => {
               );
             })}
           </div>
-        )}
-      </main>
+
+          {currentPage < totalPages && (
+            <div ref={observerRef} className="csbs-pagination-sentinel" style={{ height: '40px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0' }}>
+              <div className="spinner sm" style={{ borderTopColor: 'var(--text-dark, #333)' }}></div>
+            </div>
+          )}
+        </>
+      )}
+    </main>
 
       {/* ────────────── FOOTER ────────────── */}
       <footer className="csbs-footer">

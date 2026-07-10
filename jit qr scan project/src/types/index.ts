@@ -49,6 +49,7 @@ export type Circular = {
   pdfFile: string | null;
   pdfName: string | null;
   departments: Department[];
+  category?: 'Academic' | 'Exam' | 'Placement' | 'Workshop' | 'Events' | 'Holidays' | 'Circulars';
   uploadDate: string;
   startDate: string;
   expiryDate: string;
