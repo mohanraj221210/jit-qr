@@ -75,10 +75,10 @@ const CampusIllustrationSidebar: React.FC = () => (
     viewBox="0 0 220 600"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    style={{ position: 'absolute', bottom: 0, left: 0, right: 0, width: '100%', height: 'auto', opacity: 0.11, pointerEvents: 'none' }}
+    style={{ position: 'absolute', bottom: 0, left: 0, right: 0, width: '100%', height: 'auto', opacity: 0.3, pointerEvents: 'none' }}
     aria-hidden="true"
   >
-    <g stroke="#D4AF37" strokeLinecap="round" strokeLinejoin="round">
+    <g stroke="#ffa600ff" strokeLinecap="round" strokeLinejoin="round">
       {/* ── GROUND & WALKWAY ── */}
       <line x1="0" y1="520" x2="220" y2="520" strokeWidth="1.4"/>
       <line x1="0" y1="526" x2="220" y2="526" strokeWidth="0.5"/>
@@ -217,7 +217,7 @@ const CampusIllustrationSidebar: React.FC = () => (
       <path d="M75 330 L110 312 L145 330" strokeWidth="0.5"/>
       {/* ── CLOCK TOWER ── */}
       {/* Tower shaft */}
-      <rect x="88" y="195" width="44" height="115" strokeWidth="1.2"/>
+      <rect x="88" y="195" width="44" height="135" strokeWidth="1"/>
       {/* Tower cornice */}
       <line x1="83" y1="195" x2="137" y2="195" strokeWidth="1.1"/>
       <line x1="83" y1="199" x2="137" y2="199" strokeWidth="0.45"/>
@@ -266,18 +266,18 @@ const CampusIllustrationHero: React.FC = () => (
     viewBox="0 0 960 290"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: 'auto', maxWidth: '88%', opacity: 0.11, pointerEvents: 'none' }}
+    style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: 'auto', maxWidth: '88%', opacity: 0.7, pointerEvents: 'none' }}
     aria-hidden="true"
   >
     <defs>
       <linearGradient id="hfade" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#D4AF37" stopOpacity="0"/>
-        <stop offset="18%" stopColor="#D4AF37" stopOpacity="1"/>
-        <stop offset="85%" stopColor="#D4AF37" stopOpacity="1"/>
-        <stop offset="100%" stopColor="#D4AF37" stopOpacity="0.3"/>
+        <stop offset="0%" stopColor="#ffaf00ff" stopOpacity="0"/>
+        <stop offset="18%" stopColor="#ffaf00ff" stopOpacity="1"/>
+        <stop offset="85%" stopColor="#ffaf00ff" stopOpacity="1"/>
+        <stop offset="100%" stopColor="#ffaf00ff" stopOpacity="0.3"/>
       </linearGradient>
     </defs>
-    <g stroke="#D4AF37" strokeLinecap="round" strokeLinejoin="round">
+    <g stroke="#ffaf00ff" strokeLinecap="round" strokeLinejoin="round">
 
       {/* ══ BIRDS IN SKY ══ */}
       <path d="M38 22 Q44 16 50 22" strokeWidth="0.9"/>
