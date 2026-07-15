@@ -71,7 +71,6 @@ export type Circular = {
 
 export interface NoticeUploadPayload {
   title: string;
-  eventName: string;
   description: string;
   attachments: File | null;
   departments: Department[];

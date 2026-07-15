@@ -1,5 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import imageCompression from "browser-image-compression";
+import { PDFDocument } from "pdf-lib";
 import {
   LayoutDashboard,
   LogOut,
@@ -28,6 +30,7 @@ import {
   MoreVertical,
   ArrowRight,
   User,
+  AlertCircle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCirculars } from '../context/CircularContext';
@@ -36,7 +39,7 @@ import type { Department, Circular, NoticeUploadPayload } from '../types';
 import { format, formatDistanceToNow, isToday, isThisWeek, isThisMonth } from 'date-fns';
 import './AdminDashboard.css';
 import { AdminProfile } from './AdminProfile';
-
+import { noticeService } from '../services/notice.service';
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -581,7 +584,6 @@ const UploadModal: React.FC<{
 }> = ({ onClose, editCircular }) => {
   const { addNewCircular, editCircular: doEdit } = useCirculars();
   const [title, setTitle] = useState(editCircular?.title ?? '');
-  const [eventName, setEventName] = useState(editCircular?.eventName ?? '');
   const [description, setDescription] = useState(editCircular?.description ?? '');
   const [category, setCategory] = useState<Circular['category'] | ''>(
     editCircular?.category ?? ''
@@ -594,6 +596,7 @@ const UploadModal: React.FC<{
     editCircular?.posterImage ?? null
   );
   const [pdfName, setPdfName] = useState<string | null>(editCircular?.pdfName ?? null);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   const now = new Date();
   const defaultStart = format(now, "yyyy-MM-dd'T'HH:mm");
@@ -614,6 +617,7 @@ const UploadModal: React.FC<{
   );
 
   const [errors, setErrors] = useState<string[]>([]);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const posterRef = useRef<HTMLInputElement>(null);
   const pdfRef = useRef<HTMLInputElement>(null);
@@ -623,28 +627,136 @@ const UploadModal: React.FC<{
       prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]
     );
 
-  const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setErrors(['Poster must be an image file.']);
-      return;
+  const compressAttachment = async (file: File): Promise<File | null> => {
+    setIsCompressing(true);
+    setUploadError(null);
+    setErrors([]);
+    try {
+      // ── IMAGE FILES ──────────────────────────────────────────────────
+      // Compress first, validate size AFTER — never reject before trying.
+      if (file.type.startsWith('image/')) {
+        const originalMime = file.type as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif' | 'image/bmp';
+        const options = {
+          maxSizeMB: 5,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+          fileType: originalMime,
+          initialQuality: 0.85,
+        };
+        const compressed = await imageCompression(file, options);
+        const safeType = compressed.type.startsWith('image/') ? compressed.type : originalMime;
+        const result = new File([compressed], file.name, {
+          type: safeType,
+          lastModified: Date.now(),
+        });
+        if (result.size > 5 * 1024 * 1024) {
+          setUploadError('Unable to compress this file below the 5 MB upload limit.');
+          return null;
+        }
+        return result;
+      }
+
+      // ── PDF FILES ────────────────────────────────────────────────────
+      // Compress with pdf-lib first, then validate — never reject before trying.
+      if (file.type === 'application/pdf') {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+        const compressedBytes = await pdfDoc.save({
+          useObjectStreams: true,
+          addDefaultPage: false,
+          objectsPerTick: 50,
+        });
+        const compressed = new File([compressedBytes.buffer as ArrayBuffer], file.name, {
+          type: 'application/pdf',
+          lastModified: Date.now(),
+        });
+        if (compressed.size > 5 * 1024 * 1024) {
+          setUploadError('Unable to compress this file below the 5 MB upload limit.');
+          return null;
+        }
+        return compressed;
+      }
+
+      // ── OFFICE DOCUMENTS & OTHER FILES ──────────────────────────────
+      // No format conversion. Upload unchanged if within limit.
+      if (file.size <= 5 * 1024 * 1024) {
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        return file;
+      }
+      setUploadError('This document exceeds the 5 MB upload limit. Please compress it manually before uploading.');
+      return null;
+    } catch (err) {
+      console.error('Compression failed:', err);
+      setUploadError('Unable to compress this file below the 5 MB upload limit.');
+      return null;
+    } finally {
+      setIsCompressing(false);
     }
-    setAttachmentFile(file);
-    setPosterPreview(URL.createObjectURL(file));
-    setPdfName(null);
   };
 
-  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePosterChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.type !== 'application/pdf') {
-      setErrors(['Only PDF files are allowed.']);
+
+    if (!file.type.startsWith("image/")) {
+      setErrors(["Poster must be an image file."]);
       return;
     }
-    setAttachmentFile(file);
-    setPdfName(file.name);
-    setPosterPreview(null);
+
+    const compressed = await compressAttachment(file);
+    if (compressed) {
+      setAttachmentFile(compressed);
+      setPosterPreview(URL.createObjectURL(compressed));
+      setPdfName(null);
+      setUploadError(null);
+    }
+  };
+
+  const handlePdfChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'text/plain',
+      'application/zip',
+      'application/x-zip-compressed',
+      'image/png',
+      'image/jpeg',
+      'image/jpg',
+      'image/webp',
+      'image/gif'
+    ];
+
+    const isAllowedExt = /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|zip|gz|png|jpg|jpeg|webp|gif)$/i.test(file.name);
+
+    if (!allowedTypes.includes(file.type) && !isAllowedExt) {
+      setErrors(["Unsupported file type. Please upload PDF, Word, Excel, PowerPoint, Text, Zip, or Image."]);
+      return;
+    }
+
+    const compressed = await compressAttachment(file);
+    if (compressed) {
+      setAttachmentFile(compressed);
+      setUploadError(null);
+      if (compressed.type.startsWith('image/')) {
+        setPosterPreview(URL.createObjectURL(compressed));
+        setPdfName(null);
+      } else {
+        setPdfName(compressed.name);
+        setPosterPreview(null);
+      }
+    }
   };
 
   const validate = () => {
@@ -656,7 +768,10 @@ const UploadModal: React.FC<{
     if (startDate && expiryDate && new Date(expiryDate) <= new Date(startDate))
       errs.push('Expiry must be after start date.');
     if (!editCircular && !attachmentFile) {
-      errs.push('Please upload an attachment (Poster or PDF).');
+      errs.push('Please upload an attachment (Poster or Document).');
+    }
+    if (attachmentFile && attachmentFile.size > 5 * 1024 * 1024) {
+      errs.push('Attachment size must be below 5 MB.');
     }
     return errs;
   };
@@ -669,7 +784,6 @@ const UploadModal: React.FC<{
 
     const circularData: NoticeUploadPayload = {
       title,
-      eventName,
       description,
       attachments: attachmentFile,
       departments: selectedDepts,
@@ -694,14 +808,21 @@ const UploadModal: React.FC<{
   };
 
   return (
-    <div className="ad-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div className="ad-modal-overlay" onClick={(e) => e.target === e.currentTarget && !isCompressing && onClose()}>
       <div className="ad-modal-box ad-upload-modal">
         <div className="ad-modal-header">
           <h2>{editCircular ? 'Edit Circular' : 'Upload New Circular'}</h2>
-          <button className="ad-modal-close" onClick={onClose}><X size={20} /></button>
+          <button className="ad-modal-close" onClick={onClose} disabled={isCompressing}><X size={20} /></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="ad-modal-body ad-upload-form">
+        <form onSubmit={handleSubmit} className="ad-modal-body ad-upload-form" style={{ position: 'relative' }}>
+          {isCompressing && (
+            <div className="ad-compressing-overlay">
+              <div className="ad-compressing-spinner"></div>
+              <span className="ad-compressing-text">Compressing...</span>
+            </div>
+          )}
+
           {errors.length > 0 && (
             <div className="ad-form-errors">
               {errors.map((e, i) => <p key={i}>⚠ {e}</p>)}
@@ -722,16 +843,6 @@ const UploadModal: React.FC<{
               />
             </div>
             <div className="ad-form-row">
-              <div className="ad-form-group">
-                <label>Event Name</label>
-                <input
-                  className="ad-f-input"
-                  type="text"
-                  placeholder="e.g. Annual Symposium"
-                  value={eventName}
-                  onChange={(e) => setEventName(e.target.value)}
-                />
-              </div>
               <div className="ad-form-group">
                 <label>Category *</label>
                 <select
@@ -766,7 +877,7 @@ const UploadModal: React.FC<{
           <div className="ad-form-section">
             <h3 className="ad-section-title"><Image size={16} /> Attachments</h3>
             <div className="ad-form-row">
-              <div className="ad-upload-zone" onClick={() => posterRef.current?.click()}>
+              <div className="ad-upload-zone" onClick={() => !isCompressing && posterRef.current?.click()}>
                 {posterPreview ? (
                   <div className="ad-poster-preview-wrap">
                     <img src={posterPreview} alt="poster" className="ad-poster-preview-img" />
@@ -785,32 +896,50 @@ const UploadModal: React.FC<{
                   accept="image/*"
                   style={{ display: 'none' }}
                   onChange={handlePosterChange}
+                  disabled={isCompressing}
                 />
               </div>
 
-              <div className="ad-upload-zone" onClick={() => pdfRef.current?.click()}>
+              <div className="ad-upload-zone" onClick={() => !isCompressing && pdfRef.current?.click()}>
                 {pdfName ? (
                   <>
                     <FileText size={32} className="ad-upload-icon ad-success-icon" />
                     <p className="ad-pdf-name">{pdfName}</p>
-                    <span>Click to change PDF</span>
+                    <span>Click to change document</span>
                   </>
                 ) : (
                   <>
                     <FilePlus size={32} className="ad-upload-icon" />
-                    <p>Click to upload PDF circular</p>
-                    <span>PDF only</span>
+                    <p>Click to upload document</p>
+                    <span>PDF, Word, Excel, PPT, TXT, ZIP, Images</span>
                   </>
                 )}
                 <input
                   ref={pdfRef}
                   type="file"
-                  accept="application/pdf"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.gz,.png,.jpg,.jpeg,.webp,.gif"
                   style={{ display: 'none' }}
                   onChange={handlePdfChange}
+                  disabled={isCompressing}
                 />
               </div>
             </div>
+
+            {/* Inline upload error — shown right below the upload zones */}
+            {uploadError && (
+              <div className="ad-upload-error-banner">
+                <AlertCircle size={16} className="ad-upload-error-icon" />
+                <span>{uploadError}</span>
+                <button
+                  type="button"
+                  className="ad-upload-error-dismiss"
+                  onClick={() => setUploadError(null)}
+                  aria-label="Dismiss"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Department Selection */}
@@ -823,6 +952,7 @@ const UploadModal: React.FC<{
                     type="checkbox"
                     checked={selectedDepts.includes(d)}
                     onChange={() => toggleDept(d)}
+                    disabled={isCompressing}
                   />
                   <span className="ad-dept-short">{DEPARTMENT_SHORT_NAMES[d]}</span>
                   <span className="ad-dept-long">{DEPARTMENT_FULL_NAMES[d]}</span>
@@ -842,6 +972,7 @@ const UploadModal: React.FC<{
                   type="datetime-local"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
+                  disabled={isCompressing}
                 />
               </div>
               <div className="ad-form-group">
@@ -851,14 +982,15 @@ const UploadModal: React.FC<{
                   type="datetime-local"
                   value={expiryDate}
                   onChange={(e) => setExpiryDate(e.target.value)}
+                  disabled={isCompressing}
                 />
               </div>
             </div>
           </div>
 
           <div className="ad-modal-footer">
-            <button type="button" className="ad-btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="ad-btn-primary" disabled={submitting}>
+            <button type="button" className="ad-btn-secondary" onClick={onClose} disabled={isCompressing}>Cancel</button>
+            <button type="submit" className="ad-btn-primary" disabled={submitting || isCompressing}>
               {submitting ? <span className="spinner sm" /> : editCircular ? 'Update Circular' : 'Publish Circular'}
             </button>
           </div>
@@ -875,12 +1007,19 @@ const PreviewModal: React.FC<{ circular: Circular; onClose: () => void }> = ({
 }) => {
   const openPdf = () => {
     if (!circular.pdfFile) return;
-    const byteStr = atob(circular.pdfFile.split(',')[1]);
-    const ab = new ArrayBuffer(byteStr.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
-    const blob = new Blob([ab], { type: 'application/pdf' });
-    window.open(URL.createObjectURL(blob), '_blank');
+    const file = circular.pdfFile;
+    if (file.startsWith('data:')) {
+      const mimeMatch = file.match(/^data:([^;]+);base64,/);
+      const mime = mimeMatch ? mimeMatch[1] : 'application/pdf';
+      const byteStr = atob(file.split(',')[1]);
+      const ab = new ArrayBuffer(byteStr.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
+      const blob = new Blob([ab], { type: mime });
+      window.open(URL.createObjectURL(blob), '_blank');
+    } else {
+      window.open(file, '_blank');
+    }
   };
 
   return (
@@ -908,7 +1047,7 @@ const PreviewModal: React.FC<{ circular: Circular; onClose: () => void }> = ({
           </div>
           {circular.pdfFile && (
             <button className="ad-btn-primary ad-preview-pdf-btn" onClick={openPdf}>
-              <ExternalLink size={16} /> Open PDF
+              <ExternalLink size={16} /> {circular.pdfName && (circular.pdfName.toLowerCase().endsWith('.pdf') || circular.pdfName.toLowerCase().includes('pdf')) ? 'Open PDF' : 'Open Document'}
             </button>
           )}
         </div>
@@ -953,10 +1092,71 @@ const AdminDashboard: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const totalCirculars = circulars.length;
-  const activeCirculars = circulars.filter((c) => c.status === 'active').length;
-  const expiredCirculars = circulars.filter((c) => c.status === 'expired').length;
-  const todayUploads = circulars.filter((c) => isToday(new Date(c.uploadDate))).length;
+  const [statsDept, setStatsDept] = useState<string>('');
+  const [statsData, setStatsData] = useState<{
+    total: { _id: string | null; count: number }[];
+    categories: { _id: string; count: number }[];
+    departments: { _id: string; count: number }[];
+  } | null>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  const fetchStats = async () => {
+    setLoadingStats(true);
+    try {
+      const data = await noticeService.getNoticeStats(statsDept || undefined);
+      if (data && data.stats && data.stats[0]) {
+        setStatsData(data.stats[0]);
+      } else {
+        setStatsData({ total: [], categories: [], departments: [] });
+      }
+    } catch (err) {
+      console.error("Failed to load statistics from server:", err);
+      setStatsData({ total: [], categories: [], departments: [] });
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statsDept, circulars]);
+
+  const { totalCirculars, activeCirculars, expiredCirculars } = React.useMemo(() => {
+    let tot = 0;
+    let act = 0;
+    let exp = 0;
+
+    if (statsData?.total && Array.isArray(statsData.total)) {
+      statsData.total.forEach(item => {
+        if (item._id === null || item._id === undefined) {
+          tot += item.count || 0;
+        } else if (item._id === 'active') {
+          act = item.count || 0;
+          tot += act;
+        } else if (item._id === 'expired' || item._id === 'inactive') {
+          exp = item.count || 0;
+          tot += exp;
+        } else {
+          tot += item.count || 0;
+        }
+      });
+    }
+
+    if (tot === 0 && circulars.length > 0) {
+      return {
+        totalCirculars: circulars.length,
+        activeCirculars: circulars.filter((c) => c.status === 'active').length,
+        expiredCirculars: circulars.filter((c) => c.status === 'expired').length,
+      };
+    }
+
+    return { totalCirculars: tot, activeCirculars: act, expiredCirculars: exp };
+  }, [statsData, circulars]);
+
+  const todayUploads = React.useMemo(() => {
+    return circulars.filter((c) => isToday(new Date(c.uploadDate))).length;
+  }, [circulars]);
 
   const filtered = circulars.filter(
     (c) =>
@@ -1159,8 +1359,29 @@ const AdminDashboard: React.FC = () => {
               </button>
             </section>
 
+            {/* Stats Filter Bar */}
+            <div className="ad-stats-filter-bar">
+              <h2 className="ad-stats-section-title">Notice Statistics</h2>
+              <div className="ad-stats-dept-selector">
+                <label htmlFor="statsDeptSelect"><Filter size={14} /> Department:</label>
+                <select
+                  id="statsDeptSelect"
+                  value={statsDept}
+                  onChange={(e) => setStatsDept(e.target.value)}
+                  className="ad-stats-select"
+                >
+                  <option value="">All Departments</option>
+                  {DEPARTMENTS.map((d) => (
+                    <option key={d} value={d}>
+                      {DEPARTMENT_SHORT_NAMES[d] || d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             {/* Stat Cards */}
-            <section className="ad-stats-grid">
+            <section className="ad-stats-grid" style={{ opacity: loadingStats ? 0.7 : 1, transition: 'opacity 0.2s' }}>
               {statCards.map((s) => (
                 <div className="ad-stat-card" key={s.label}>
                   <div className="ad-stat-top">
@@ -1334,12 +1555,20 @@ const AdminDashboard: React.FC = () => {
                   });
 
                   const deptCounts = DEPARTMENTS.map(d => {
-                    const count = filteredAnalytics.filter(c => c.departments.includes(d)).length;
+                    let count = 0;
+                    if (analyticsStatus === 'all' && analyticsTime === 'all') {
+                      const found = statsData?.departments?.find(item => item._id === d);
+                      count = found ? found.count : 0;
+                    } else {
+                      count = filteredAnalytics.filter(c => c.departments.includes(d)).length;
+                    }
                     return { dept: d, name: DEPARTMENT_FULL_NAMES[d], count };
                   });
 
                   const maxCount = Math.max(...deptCounts.map(d => d.count), 1);
-                  const totalCount = filteredAnalytics.length;
+                  const totalCount = analyticsStatus === 'all' && analyticsTime === 'all'
+                    ? totalCirculars
+                    : filteredAnalytics.length;
                   const totalSlices = deptCounts.reduce((sum, item) => sum + item.count, 0);
 
                   const PIE_COLORS = ['#163A70', '#22C55E', '#F59E0B', '#EF4444', '#8b5cf6', '#06b6d4', '#D4AF37'];

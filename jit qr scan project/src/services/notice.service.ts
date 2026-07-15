@@ -51,30 +51,66 @@ export const mapApiNoticeToCircular = (item: any): Circular => {
   const expiry = item.schedule?.expiry || item.expiryDate || new Date().toISOString();
   const status = new Date(expiry) <= new Date() ? 'expired' : 'active';
 
-  let isPdf = false;
+  let isImage = false;
   let posterImage: string | null = null;
   let pdfFile: string | null = null;
   let pdfName: string | null = null;
 
   if (item.attachments) {
+    let attachmentLink = '';
+    let attachmentMime = '';
+
     if (typeof item.attachments === 'string') {
-      const lower = item.attachments.toLowerCase();
-      isPdf = lower.includes('.pdf') || lower.startsWith('data:application/pdf');
-      if (isPdf) {
-        pdfFile = item.attachments;
-        pdfName = 'Circular.pdf';
-      } else {
-        posterImage = item.attachments;
-      }
+      attachmentLink = item.attachments;
     } else if (typeof item.attachments === 'object') {
-      const formatLower = item.attachments.format?.toLowerCase() || '';
-      const linkLower = item.attachments.link?.toLowerCase() || '';
-      isPdf = formatLower.includes('pdf') || linkLower.endsWith('.pdf');
-      if (isPdf) {
-        pdfFile = item.attachments.link || null;
-        pdfName = 'Circular.pdf';
-      } else {
-        posterImage = item.attachments.link || null;
+      attachmentLink = item.attachments.link || '';
+      attachmentMime = item.attachments.format || item.attachments.mimetype || item.attachments.type || '';
+    }
+
+    const lowerLink = attachmentLink.toLowerCase();
+
+    // Detect MIME from a data URI (most reliable — comes from original upload)
+    let dataUriMime = '';
+    if (attachmentLink.startsWith('data:')) {
+      const mimeMatch = attachmentLink.match(/^data:([^;]+);base64,/);
+      dataUriMime = mimeMatch ? mimeMatch[1].toLowerCase() : '';
+    }
+
+    // A file is an image when:
+    //   1. Its data-URI MIME starts with "image/", OR
+    //   2. The server-supplied MIME field starts with "image/", OR
+    //   3. Its URL path ends with a recognised image extension
+    const IMAGE_EXTS = /\.(png|jpe?g|webp|gif|bmp|heic|heif|svg|avif|tiff?)$/;
+    isImage =
+      dataUriMime.startsWith('image/') ||
+      attachmentMime.toLowerCase().startsWith('image/') ||
+      IMAGE_EXTS.test(lowerLink);
+
+    if (isImage) {
+      posterImage = attachmentLink;
+    } else {
+      pdfFile = attachmentLink;
+      // Determine a human-readable filename for non-image attachments
+      try {
+        if (attachmentLink.startsWith('data:')) {
+          // Use the MIME from the data URI to pick an extension
+          const mime = dataUriMime;
+          let ext = 'bin';
+          if (mime === 'application/pdf') ext = 'pdf';
+          else if (mime.includes('word') || mime.includes('msword')) ext = 'docx';
+          else if (mime.includes('sheet') || mime.includes('excel')) ext = 'xlsx';
+          else if (mime.includes('presentation') || mime.includes('powerpoint')) ext = 'pptx';
+          else if (mime.includes('zip')) ext = 'zip';
+          else if (mime.includes('gzip')) ext = 'gz';
+          else if (mime.includes('text')) ext = 'txt';
+          pdfName = `Attachment.${ext}`;
+        } else {
+          const urlObj = new URL(attachmentLink);
+          const filename = urlObj.pathname.split('/').pop();
+          pdfName = filename && filename.includes('.') ? decodeURIComponent(filename) : 'Attachment';
+        }
+      } catch (e) {
+        pdfName = 'Attachment';
       }
     }
   }
@@ -98,6 +134,14 @@ export const mapApiNoticeToCircular = (item: any): Circular => {
 };
 
 export const noticeService = {
+  async getNoticeStats(department?: string): Promise<any> {
+    const url = department 
+      ? `/admin/get/notice/stats?department=${encodeURIComponent(department)}`
+      : '/admin/get/notice/stats';
+    const response = await apiClient.get<any>(url);
+    return response.data;
+  },
+
   async getNotices(page: number = 1): Promise<PaginatedNotices> {
     const response = await apiClient.get<any>(`/admin/get/notice?page=${page}`);
     const data = response.data;
@@ -133,7 +177,6 @@ export const noticeService = {
   async createNotice(notice: NoticeUploadPayload): Promise<Circular> {
     const formData = new FormData();
     formData.append('title', notice.title);
-    formData.append('name', notice.eventName);
     formData.append('description', notice.description);
     formData.append('category', notice.category);
     formData.append('start', notice.startDate);
@@ -151,7 +194,6 @@ export const noticeService = {
   async updateNotice(id: string, notice: NoticeUploadPayload): Promise<Circular> {
     const formData = new FormData();
     formData.append('title', notice.title);
-    formData.append('name', notice.eventName);
     formData.append('description', notice.description);
     formData.append('category', notice.category);
     formData.append('start', notice.startDate);

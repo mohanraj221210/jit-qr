@@ -249,7 +249,7 @@ const CircularCard: React.FC<{
                 className="card-btn primary"
                 onClick={() => openPdf(circular.pdfFile!)}
               >
-                <ExternalLink size={15} /> View PDF
+                <ExternalLink size={15} /> {circular.pdfName && (circular.pdfName.toLowerCase().endsWith('.pdf') || circular.pdfName.toLowerCase().includes('pdf')) ? 'View PDF' : 'Open Document'}
               </button>
               <button
                 className="card-btn secondary"

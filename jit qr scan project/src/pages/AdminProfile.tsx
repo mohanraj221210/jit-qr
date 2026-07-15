@@ -4,9 +4,7 @@ import {
   Mail,
   Phone,
   Shield,
-  Key,
   Save,
-  AlertCircle,
   ArrowLeft
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -143,17 +141,12 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
 
   // Loading & submit states
   const [isSaving, setIsSaving] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const { logout } = useAuth();
 
   // Validation errors
   const [errors, setErrors] = useState<{ fullName?: string; email?: string; mobile?: string }>({});
 
-  // Password fields
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+
 
   // Fetch live profile details on mount
   const fetchProfile = async () => {
@@ -242,44 +235,7 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
     }
   };
 
-  const handlePasswordChangeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPasswordError('');
-
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordError('All password fields are required.');
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setPasswordError('New password must be at least 6 characters long.');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError('New passwords do not match.');
-      return;
-    }
-
-    setIsChangingPassword(true);
-    try {
-      await profileService.updateProfile({
-        name: fullName,
-        email,
-        phone: mobile,
-        password: newPassword
-      });
-      toast.success('Password updated successfully!');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (err: any) {
-      const msg = err.response?.data?.message || 'Failed to update password.';
-      setPasswordError(msg);
-    } finally {
-      setIsChangingPassword(false);
-    }
-  };
+  
 
   const handleDeleteProfile = async () => {
     const confirm = window.confirm('Are you sure you want to delete your administrator account? This action cannot be undone.');
@@ -332,9 +288,6 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
 
   return (
     <div className="ap-container">
-      {/* Subtle Campus Line Art Background */}
-      <CampusIllustrationProfile />
-
       {/* Header */}
       <header className="ap-header">
         <div className="ap-header-left">
@@ -507,91 +460,7 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
             </form>
           </div>
 
-          {/* Security Section (Change Password) */}
-          <div className="ap-card ap-security-card">
-            <div className="ap-security-header">
-              <div>
-                <h3 className="ap-card-sec-title">Security & Password</h3>
-                <p className="ap-card-sec-sub">Update your password to keep your administrator account secure.</p>
-              </div>
-              <div className="ap-security-shield-icon">
-                <Shield size={24} />
-              </div>
-            </div>
-
-            <form onSubmit={handlePasswordChangeSubmit} className="ap-security-form">
-              {passwordError && (
-                <div className="ap-password-error-box">
-                  <AlertCircle size={16} />
-                  <span>{passwordError}</span>
-                </div>
-              )}
-
-              <div className="ap-password-grid">
-                <div className="ap-form-group">
-                  <label className="ap-field-label">Current Password</label>
-                  <div className="ap-input-wrapper">
-                    <Key className="ap-field-icon" size={18} />
-                    <input
-                      type="password"
-                      className="ap-input"
-                      placeholder="••••••••••••"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="ap-form-group">
-                  <label className="ap-field-label">New Password</label>
-                  <div className="ap-input-wrapper">
-                    <Key className="ap-field-icon" size={18} />
-                    <input
-                      type="password"
-                      className="ap-input"
-                      placeholder="••••••••••••"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="ap-form-group">
-                  <label className="ap-field-label">Confirm New Password</label>
-                  <div className="ap-input-wrapper">
-                    <Key className="ap-field-icon" size={18} />
-                    <input
-                      type="password"
-                      className="ap-input"
-                      placeholder="••••••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="ap-security-actions">
-                <button
-                  type="submit"
-                  className="ap-btn ap-btn-primary"
-                  disabled={isChangingPassword}
-                >
-                  {isChangingPassword ? (
-                    <>
-                      <span className="ap-spinner"></span>
-                      Updating...
-                    </>
-                  ) : (
-                    <>
-                      <Key size={16} />
-                      Change Password
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
+          
 
           {/* Danger Zone */}
           <div className="ap-card ap-danger-card">
@@ -610,5 +479,5 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
         </div>
       </div>
     </div>
-  );
+  ); 
 };

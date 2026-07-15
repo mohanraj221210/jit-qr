@@ -26,7 +26,9 @@ import {
   Award,
   Globe,
   MapPin,
-  Clipboard
+  Clipboard,
+  ZoomIn,
+  ZoomOut
 } from 'lucide-react';
 import { useCirculars } from '../../context/CircularContext';
 import type { Circular } from '../../types';
@@ -55,19 +57,10 @@ const getPriority = (c: Circular): 'urgent' | 'important' | 'normal' => {
   return 'normal';
 };
 
-const getCategory = (c: Circular): string => {
-  const text = `${c.title} ${c.description || ''} ${c.eventName || ''}`.toLowerCase();
-  if (/(project expo|exhibition|expo)/.test(text)) return 'Project Expo';
-  if (/(symposium|national level)/.test(text)) return 'Symposium';
-  if (/(industrial visit|iv|tour|factory)/.test(text)) return 'Industrial Visit';
-  if (/(research|paper|publication|journal)/.test(text)) return 'Research';
-  if (/(exam|test|assessment|quiz)/.test(text)) return 'Exam';
-  if (/(placement|interview|job|recruitment)/.test(text)) return 'Placement';
-  if (/(workshop|training)/.test(text)) return 'Workshop';
-  if (/(event|fest|celebration)/.test(text)) return 'Events';
-  if (/(academic|class|syllabus)/.test(text)) return 'Academic';
-  return 'Circulars';
-};
+// Read category directly from the API field — never infer from keywords.
+const getCategory = (c: Circular): string =>
+  (c.category?.trim() || 'Circulars');
+
 
 const getRotation = (id: string) => {
   let hash = 0;
@@ -87,6 +80,8 @@ const MechanicalDashboard: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedNotice, setSelectedNotice] = useState<Circular | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [viewingFile, setViewingFile] = useState<{ url: string; type: 'image' | 'pdf' } | null>(null);
+  const [zoomScale, setZoomScale] = useState(1);
 
   const filteredCirculars = useMemo(() => {
     return allMechCirculars.filter((c) => {
@@ -95,7 +90,9 @@ const MechanicalDashboard: React.FC = () => {
         (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const category = getCategory(c);
-      const matchCategory = selectedCategory === 'All' || category === selectedCategory;
+      const matchCategory =
+        selectedCategory === 'All' ||
+        category.trim().toLowerCase() === selectedCategory.trim().toLowerCase();
 
       return matchSearch && matchCategory;
     });
@@ -164,17 +161,23 @@ const MechanicalDashboard: React.FC = () => {
     }
   };
 
-  const openPdf = (file: string) => {
+  const openViewer = (file: string, type: 'image' | 'pdf') => {
     if (file.startsWith('data:')) {
+      const mimeMatch = file.match(/^data:([^;]+);base64,/);
+      const mime = mimeMatch ? mimeMatch[1] : (type === 'image' ? 'image/png' : 'application/pdf');
       const byteStr = atob(file.split(',')[1]);
       const ab = new ArrayBuffer(byteStr.length);
       const ia = new Uint8Array(ab);
       for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
-      const blob = new Blob([ab], { type: 'application/pdf' });
-      window.open(URL.createObjectURL(blob), '_blank');
+      const blob = new Blob([ab], { type: mime });
+      setViewingFile({ url: URL.createObjectURL(blob), type });
     } else {
-      window.open(file, '_blank');
+      setViewingFile({ url: file, type });
     }
+  };
+
+  const openPdf = (file: string) => {
+    openViewer(file, 'pdf');
   };
 
   useEffect(() => {
@@ -363,12 +366,19 @@ const MechanicalDashboard: React.FC = () => {
             </div>
             
             {selectedNotice.posterImage && (
-              <div style={{ marginBottom: 20, textAlign: 'center', borderRadius: 6, overflow: 'hidden', border: '1px solid #E5E7EB', backgroundColor: '#f9fafb' }}>
+              <div 
+                onClick={() => openViewer(selectedNotice.posterImage!, 'image')}
+                style={{ cursor: 'pointer', marginBottom: 20, textAlign: 'center', borderRadius: 6, overflow: 'hidden', border: '1px solid #E5E7EB', backgroundColor: '#f9fafb' }}
+                title="Click to view fullscreen"
+              >
                 <img
                   src={selectedNotice.posterImage}
                   alt={selectedNotice.title}
                   style={{ maxWidth: '100%', maxHeight: '350px', objectFit: 'contain', display: 'block', margin: '0 auto' }}
                 />
+                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '6px', textAlign: 'center' }}>
+                  🔍 Click to view full screen
+                </div>
               </div>
             )}
 
@@ -395,6 +405,90 @@ const MechanicalDashboard: React.FC = () => {
               <button onClick={() => handleShare(selectedNotice)} style={{ padding: '10px', background: 'white', color: 'var(--mech-text-dark)', border: '1px solid #D1D5DB', borderRadius: 4, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                 <Share2 size={16} />
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* ────────────── UNIFIED FILE VIEWER MODAL ────────────── */}
+      {viewingFile && (
+        <div className="pdf-viewer-overlay" onClick={() => { setViewingFile(null); setZoomScale(1); }}>
+          <div className="pdf-viewer-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="pdf-viewer-header">
+              <h3>${viewingFile.type === 'image' ? 'Circular Image' : 'Circular Document'}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button 
+                  className="pdf-viewer-close" 
+                  onClick={() => setZoomScale(prev => Math.max(prev - 0.25, 0.5))}
+                  title="Zoom Out"
+                  style={{ marginRight: '4px' }}
+                >
+                  <ZoomOut size={18} />
+                </button>
+                <span style={{ fontSize: '13px', fontWeight: 600, minWidth: '40px', textAlign: 'center' }}>
+                  ${Math.round(zoomScale * 100)}%
+                </span>
+                <button 
+                  className="pdf-viewer-close" 
+                  onClick={() => setZoomScale(prev => Math.min(prev + 0.25, 3))}
+                  title="Zoom In"
+                  style={{ marginRight: '16px' }}
+                >
+                  <ZoomIn size={18} />
+                </button>
+                <button 
+                  className="pdf-viewer-close" 
+                  onClick={() => setZoomScale(1)}
+                  title="Reset Zoom"
+                  style={{ marginRight: '16px' }}
+                >
+                  Reset
+                </button>
+                <button className="pdf-viewer-close" onClick={() => { setViewingFile(null); setZoomScale(1); }}>
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+            <div className="pdf-viewer-body" style={{ overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+              ${viewingFile.type === 'image' ? (
+                <div style={{ 
+                  overflow: 'auto', 
+                  width: '100%', 
+                  height: '100%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center' 
+                }}>
+                  <img
+                    src={viewingFile.url}
+                    alt="Circular Content"
+                    style={{
+                      transform: `scale(${zoomScale})`,
+                      transformOrigin: 'center center',
+                      transition: 'transform 0.2s ease',
+                      maxHeight: '100%',
+                      maxWidth: '100%',
+                      objectFit: 'contain'
+                    }}
+                  />
+                </div>
+              ) : (
+                <div style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  transform: `scale(${zoomScale})`,
+                  transformOrigin: 'top center',
+                  transition: 'transform 0.2s ease'
+                }}>
+                  <iframe
+                    src={viewingFile.url}
+                    title="Circular Document"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 'none' }}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
