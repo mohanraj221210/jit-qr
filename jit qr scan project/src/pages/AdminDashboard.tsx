@@ -64,7 +64,7 @@ const Sparkline: React.FC<{ color: string }> = ({ color }) => {
   );
 };
 
-/* ───────────── Campus Illustration SVG (Sidebar) ───────────── */
+/* ───────────── Campus Illustration SVG (Sidebar)#ffa600ff ───────────── */
 const CampusIllustrationSidebar: React.FC = () => (
   <svg
     viewBox="0 0 220 600"
@@ -73,7 +73,7 @@ const CampusIllustrationSidebar: React.FC = () => (
     style={{ position: 'absolute', bottom: 0, left: 0, right: 0, width: '100%', height: 'auto', opacity: 0.3, pointerEvents: 'none' }}
     aria-hidden="true"
   >
-    <g stroke="#ffa600ff" strokeLinecap="round" strokeLinejoin="round">
+    <g stroke="#000000ff" strokeLinecap="round" strokeLinejoin="round">
       {/* ── GROUND & WALKWAY ── */}
       <line x1="0" y1="520" x2="220" y2="520" strokeWidth="1.4" />
       <line x1="0" y1="526" x2="220" y2="526" strokeWidth="0.5" />
