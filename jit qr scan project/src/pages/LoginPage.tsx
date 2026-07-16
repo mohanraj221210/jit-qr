@@ -34,10 +34,22 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="login-page">
+      {/* Mobile Hero Section — branding for smaller viewports */}
+      <div className="mobile-hero">
+        <div className="mobile-hero-bg" />
+        <div className="mobile-hero-content">
+          <img src="/noticelogo.png" alt="College Crest" className="mobile-crest-logo" />
+          <div className="mobile-logo-text">
+            <span className="mobile-logo-title-main">NOTICE BOARD</span>
+            <span className="mobile-logo-title-sub">ADMIN PORTAL</span>
+          </div>
+        </div>
+      </div>
+
       {/* Left Panel — Branding & Illustration (55% width) */}
       <div className="login-left">
         <div className="login-left-header">
-          <img src="/jit_crest_logo.png" alt="College Crest" className="college-logo-img" />
+          <img src="/noticelogo.png" alt="College Crest" className="college-logo-img" />
           <div className="logo-text">
             <span className="logo-title-main">NOTICE BOARD</span>
             <span className="logo-title-sub">ADMIN PORTAL</span>
@@ -58,7 +70,7 @@ const LoginPage: React.FC = () => {
 
         <div className="login-left-illustration-wrap">
           <img
-            src="/jit_entrance_sketch.png"
+            src="/jitgate.jpeg"
             alt="Jeppiaar Institute of Technology Entrance"
             className="entrance-sketch-img"
           />
@@ -72,10 +84,10 @@ const LoginPage: React.FC = () => {
         <div className="login-card">
           <div className="login-card-header">
             <div className="badge-logo-container">
-              <img src="/jit_line_art_logo.png" alt="Campus Line Art Badge" className="badge-logo-img" />
+              <img src="/noticelogo.png" alt="Campus Line Art Badge" className="badge-logo-img" />
             </div>
             <h2 className="login-title-redesign">
-              Welcome Back, <span>Admin!</span>
+              Welcome Back, <br className="mobile-br" /><span>Admin!</span>
             </h2>
             <p className="login-subtitle-redesign">
               Sign in to continue to your admin dashboard
@@ -158,8 +170,17 @@ const LoginPage: React.FC = () => {
           </form>
 
           <div className="login-hint-redesign">
-            <p>Default credentials:</p>
-            <code>rohithvijay2205@gmail.com &nbsp;/&nbsp; 12345678</code>
+            <div className="demo-badge">Demo Login</div>
+            <div className="demo-creds">
+              <div className="demo-cred-item">
+                <span className="demo-icon">📧</span>
+                <code>rohithvijay2205@gmail.com</code>
+              </div>
+              <div className="demo-cred-item">
+                <span className="demo-icon">🔑</span>
+                <code>12345678</code>
+              </div>
+            </div>
           </div>
 
           <div className="security-divider">
@@ -169,8 +190,10 @@ const LoginPage: React.FC = () => {
           </div>
 
           <div className="login-footer-text">
-            <div>© 2026 Notice Board Admin Portal</div>
-            <div>Jeppiaar Institute of Technology. All Rights Reserved.</div>
+            <div className="footer-secure">Secure Admin Access</div>
+            <div className="footer-copyright">© 2026 Notice Board Admin Portal</div>
+            <div className="footer-college-desktop">Jeppiaar Institute of Technology. All Rights Reserved.</div>
+            <div className="footer-college-mobile">Jeppiaar Institute of Technology</div>
           </div>
         </div>
       </div>

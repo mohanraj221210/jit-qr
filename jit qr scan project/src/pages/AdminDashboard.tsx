@@ -1240,7 +1240,7 @@ const AdminDashboard: React.FC = () => {
         {/* Brand */}
         <div className="ad-sidebar-brand">
           <div className="ad-sidebar-logo">
-            <img src="/jitnotice.png" alt="JIT" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src="/noticelogo.png" alt="JIT" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             <GraduationCap size={26} className="ad-sidebar-logo-fallback" />
           </div>
           <div>
@@ -1313,7 +1313,7 @@ const AdminDashboard: React.FC = () => {
             </button>
             <div className="ad-topbar-brand">
               <div className="ad-topbar-logo">
-                <img src="/jitnotice.png" alt="JIT" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <img src="/noticelogo.png" alt="JIT" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 <GraduationCap size={22} className="ad-topbar-logo-fallback" />
               </div>
               <div>

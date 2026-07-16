@@ -196,6 +196,13 @@
   color: var(--ad-text);
 }
 
+.ap-profile-designation {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ad-gold);
+  margin-top: 4px;
+}
+
 .ap-role-badge {
   display: inline-flex;
   align-items: center;
@@ -209,6 +216,13 @@
   margin-top: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.ap-profile-dept {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ad-text-2);
+  margin-top: 6px;
 }
 
 .ap-profile-email {
@@ -333,12 +347,14 @@
   border-radius: 12px;
   padding: 0 14px;
   background: #ffffff;
-  transition: all 0.2s ease;
+  transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .ap-input-wrapper:focus-within {
-  border-color: var(--ad-navy);
-  box-shadow: 0 0 0 3px rgba(22, 58, 112, 0.15);
+  border-color: var(--ad-gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25);
 }
 
 .ap-input-wrapper.error {
@@ -349,15 +365,42 @@
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
 }
 
+.ap-input-wrapper.readonly {
+  background: rgba(241, 245, 249, 0.5); /* Modern slate read-only background */
+  border-color: rgba(226, 232, 240, 0.5);
+  box-shadow: none;
+  cursor: default;
+}
+
+.ap-input-wrapper.readonly .ap-input {
+  color: var(--ad-text-2);
+  cursor: default;
+}
+
+.ap-input-wrapper.readonly .ap-field-icon {
+  color: var(--ad-text-3);
+  opacity: 0.6;
+}
+
+.ap-textarea-wrapper {
+  padding: 8px 14px;
+}
+
+.ap-textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
 .ap-field-icon {
   color: var(--ad-text-3);
   margin-right: 10px;
   flex-shrink: 0;
-  transition: color 0.2s ease;
+  transition: color 0.3s ease;
 }
 
 .ap-input-wrapper:focus-within .ap-field-icon {
-  color: var(--ad-navy);
+  color: var(--ad-gold);
 }
 
 .ap-input {
@@ -381,7 +424,7 @@
   margin-top: 4px;
 }
 
-/* Actions */
+/* Actions with fade-in micro-animation */
 .ap-form-actions {
   display: flex;
   justify-content: flex-end;
@@ -391,6 +434,18 @@
   border-top: 1px solid var(--ad-border);
   padding-top: 20px;
   flex-wrap: wrap;
+  animation: ap-fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes ap-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Password Form */

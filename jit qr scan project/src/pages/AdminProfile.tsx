@@ -5,7 +5,8 @@ import {
   Phone,
   Shield,
   Save,
-  ArrowLeft
+  ArrowLeft,
+  Edit2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './AdminProfile.css';
@@ -24,6 +25,8 @@ interface ProfileData {
   lastLogin: string;
   status: string;
   lastUpdated: string;
+  adminId?: string;
+  username?: string;
 }
 
 const defaultProfile: ProfileData = {
@@ -35,7 +38,9 @@ const defaultProfile: ProfileData = {
   accountCreated: '15 Jan 2026',
   lastLogin: 'Today, 10:00 AM',
   status: 'Active',
-  lastUpdated: '10 Jul 2026'
+  lastUpdated: '10 Jul 2026',
+  adminId: 'AD-2026-001',
+  username: 'admin'
 };
 
 interface AdminProfileProps {
@@ -137,16 +142,24 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
+  const [designation, setDesignation] = useState('');
+  const [department, setDepartment] = useState('');
+  const [bio, setBio] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Edit Mode state
+  const [isEditMode, setIsEditMode] = useState(false);
 
   // Loading & submit states
   const [isSaving, setIsSaving] = useState(false);
   const { logout } = useAuth();
 
   // Validation errors
-  const [errors, setErrors] = useState<{ fullName?: string; email?: string; mobile?: string }>({});
-
-
+  const [errors, setErrors] = useState<{
+    fullName?: string;
+    email?: string;
+    mobile?: string;
+  }>({});
 
   // Fetch live profile details on mount
   const fetchProfile = async () => {
@@ -155,6 +168,9 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
       setFullName(data.name);
       setEmail(data.email);
       setMobile(data.phone);
+
+      
+
       setProfile({
         fullName: data.name,
         email: data.email,
@@ -164,13 +180,23 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
         accountCreated: data.createdAt ? new Date(data.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '15 Jan 2026',
         lastLogin: data.lastLoginAt ? new Date(data.lastLoginAt).toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'Today, 10:00 AM',
         status: data.status || 'Active',
-        lastUpdated: data.updatedAt ? new Date(data.updatedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '10 Jul 2026'
+        lastUpdated: data.updatedAt ? new Date(data.updatedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '10 Jul 2026',
+        adminId: data.role === 'SuperAdmin' ? 'AD-2026-SUP' : 'AD-2026-001', // Using simulated ID based on role or fallback
+        username: data.email ? data.email.split('@')[0] : 'admin'
       });
     } catch (err) {
       // Fall back to dummy profile data if unauthorized/offline
       setFullName(profile.fullName);
       setEmail(profile.email);
       setMobile(profile.mobile);
+
+      const savedDesignation = localStorage.getItem('admin_designation') || 'Chief Administrator';
+      const savedDepartment = localStorage.getItem('admin_department') || 'IT & Operations';
+      const savedBio = localStorage.getItem('admin_bio') || 'Responsible for managing college notifications, QR code generation, access control, and user role management.';
+      
+      setDesignation(savedDesignation);
+      setDepartment(savedDepartment);
+      setBio(savedBio);
     } finally {
       setLoading(false);
     }
@@ -181,20 +207,33 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
   }, []);
 
   const validateForm = () => {
-    const newErrors: { fullName?: string; email?: string; mobile?: string } = {};
+    const newErrors: {
+      fullName?: string;
+      email?: string;
+      mobile?: string;
+      designation?: string;
+      department?: string;
+      bio?: string;
+    } = {};
 
     if (!fullName.trim()) {
       newErrors.fullName = 'Full Name is required.';
+    } else if (fullName.length > 100) {
+      newErrors.fullName = 'Full Name cannot exceed 100 characters.';
     }
 
     if (!email.trim()) {
       newErrors.email = 'Email Address is required.';
+    } else if (email.length > 100) {
+      newErrors.email = 'Email cannot exceed 100 characters.';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Please enter a valid email address.';
     }
 
     if (!mobile.trim()) {
       newErrors.mobile = 'Mobile number is required.';
+    } else if (mobile.length > 20) {
+      newErrors.mobile = 'Mobile number cannot exceed 20 characters.';
     } else if (!/^\+?[0-9\s-]{10,15}$/.test(mobile.replace(/\s+/g, ''))) {
       newErrors.mobile = 'Please enter a valid mobile number (10-15 digits).';
     }
@@ -203,12 +242,16 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleReset = () => {
+  const handleCancel = () => {
     setFullName(profile.fullName);
     setEmail(profile.email);
     setMobile(profile.mobile);
+    setDesignation(localStorage.getItem('admin_designation') || 'Chief Administrator');
+    setDepartment(localStorage.getItem('admin_department') || 'IT & Operations');
+    setBio(localStorage.getItem('admin_bio') || 'Responsible for managing college notifications, QR code generation, access control, and user role management.');
     setErrors({});
-    toast.success('Changes reset to last saved state.');
+    setIsEditMode(false);
+    toast.success('Changes discarded.');
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -220,13 +263,33 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
 
     setIsSaving(true);
     try {
-      await profileService.updateProfile({
+      const updatedProfile = await profileService.updateProfile({
         name: fullName,
         email,
         phone: mobile
       });
-      toast.success('Profile updated successfully!');
-      fetchProfile();
+      
+      // Save local fields
+      localStorage.setItem('admin_designation', designation.trim());
+      localStorage.setItem('admin_department', department.trim());
+      localStorage.setItem('admin_bio', bio.trim());
+
+      // Update the local profile state directly to reflect changes immediately
+      setProfile(prev => ({
+        ...prev,
+        fullName: updatedProfile.name || fullName,
+        email: updatedProfile.email || email,
+        mobile: updatedProfile.phone || mobile,
+        username: updatedProfile.email ? updatedProfile.email.split('@')[0] : prev.username,
+      }));
+
+      // Ensure form state matches the updated data
+      setFullName(updatedProfile.name || fullName);
+      setEmail(updatedProfile.email || email);
+      setMobile(updatedProfile.phone || mobile);
+
+      toast.success('Profile updated successfully.');
+      setIsEditMode(false);
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Failed to update profile details.';
       toast.error(msg);
@@ -313,10 +376,12 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
 
             <div className="ap-profile-info">
               <h2 className="ap-profile-name">{fullName || 'Admin'}</h2>
+              <p className="ap-profile-designation">{designation || 'Chief Administrator'}</p>
               <div className="ap-role-badge">
                 <Shield size={12} />
                 <span>{profile.role}</span>
               </div>
+              <p className="ap-profile-dept">{department || 'IT & Operations'}</p>
               <p className="ap-profile-email">{email || 'admin@jit.ac.in'}</p>
 
               <div className="ap-profile-status-bar">
@@ -335,6 +400,14 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
           <div className="ap-card ap-account-meta-card">
             <h3 className="ap-card-sec-title">Account Information</h3>
             <div className="ap-meta-list">
+              <div className="ap-meta-item">
+                <span className="ap-meta-label">Admin ID</span>
+                <span className="ap-meta-val">{profile.adminId || 'AD-2026-001'}</span>
+              </div>
+              <div className="ap-meta-item">
+                <span className="ap-meta-label">Username</span>
+                <span className="ap-meta-val">@{profile.username || 'admin'}</span>
+              </div>
               <div className="ap-meta-item">
                 <span className="ap-meta-label">Administrator Role</span>
                 <span className="ap-meta-val">{profile.role}</span>
@@ -359,7 +432,9 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
         <div className="ap-col-main">
           {/* Personal Info Form */}
           <div className="ap-card ap-form-card">
-            <h3 className="ap-card-sec-title">Personal Information</h3>
+            <h3 className="ap-card-sec-title">
+              {isEditMode ? '📝 Edit Personal Information' : 'ℹ️ Personal Information'}
+            </h3>
 
             <form onSubmit={handleSave} className="ap-form">
               <div className="ap-form-fields-grid">
@@ -368,7 +443,7 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
                   <label htmlFor="fullName" className="ap-field-label">
                     Full Name
                   </label>
-                  <div className={`ap-input-wrapper ${errors.fullName ? 'error' : ''}`}>
+                  <div className={`ap-input-wrapper ${errors.fullName ? 'error' : ''} ${!isEditMode ? 'readonly' : ''}`}>
                     <User className="ap-field-icon" size={18} />
                     <input
                       id="fullName"
@@ -377,6 +452,8 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
                       placeholder="Enter full name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
+                      readOnly={!isEditMode}
+                      disabled={isSaving}
                     />
                   </div>
                   {errors.fullName && <p className="ap-validation-msg">{errors.fullName}</p>}
@@ -387,7 +464,7 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
                   <label htmlFor="email" className="ap-field-label">
                     Email Address
                   </label>
-                  <div className={`ap-input-wrapper ${errors.email ? 'error' : ''}`}>
+                  <div className={`ap-input-wrapper ${errors.email ? 'error' : ''} ${!isEditMode ? 'readonly' : ''}`}>
                     <Mail className="ap-field-icon" size={18} />
                     <input
                       id="email"
@@ -396,17 +473,19 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
                       placeholder="admin@jit.ac.in"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      readOnly={!isEditMode}
+                      disabled={isSaving}
                     />
                   </div>
                   {errors.email && <p className="ap-validation-msg">{errors.email}</p>}
                 </div>
 
-                {/* Mobile Number */}
-                <div className="ap-form-group ap-grid-full">
+                {/* Phone Number */}
+                <div className="ap-form-group">
                   <label htmlFor="mobile" className="ap-field-label">
-                    Mobile Number
+                    Phone Number
                   </label>
-                  <div className={`ap-input-wrapper ${errors.mobile ? 'error' : ''}`}>
+                  <div className={`ap-input-wrapper ${errors.mobile ? 'error' : ''} ${!isEditMode ? 'readonly' : ''}`}>
                     <Phone className="ap-field-icon" size={18} />
                     <input
                       id="mobile"
@@ -415,52 +494,67 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
                       placeholder="+91 98765 43210"
                       value={mobile}
                       onChange={(e) => setMobile(e.target.value)}
+                      readOnly={!isEditMode}
+                      disabled={isSaving}
                     />
                   </div>
                   {errors.mobile && <p className="ap-validation-msg">{errors.mobile}</p>}
                 </div>
+
+                {/* Designation */}
+               
+
+                {/* Department */}
+                
+
+                {/* Bio/About */}
+               
               </div>
 
               {/* Form Action Buttons */}
-              <div className="ap-form-actions">
-                <button
-                  type="button"
-                  className="ap-btn ap-btn-outline"
-                  onClick={onBack}
-                >
-                  Cancel
-                </button>
+              {isEditMode ? (
+                <div className="ap-form-actions">
+                  <button
+                    type="button"
+                    className="ap-btn ap-btn-outline"
+                    onClick={handleCancel}
+                    disabled={isSaving}
+                  >
+                    Cancel
+                  </button>
 
-                <button
-                  type="button"
-                  className="ap-btn ap-btn-ghost"
-                  onClick={handleReset}
-                >
-                  Reset Changes
-                </button>
-
-                <button
-                  type="submit"
-                  className="ap-btn ap-btn-primary"
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <>
-                      <span className="ap-spinner"></span>
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save size={16} />
-                      Save Changes
-                    </>
-                  )}
-                </button>
-              </div>
+                  <button
+                    type="submit"
+                    className="ap-btn ap-btn-primary"
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <>
+                        <span className="ap-spinner"></span>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={16} />
+                        Save Changes
+                      </>
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <div className="ap-form-actions">
+                  <button
+                    type="button"
+                    className="ap-btn ap-btn-primary"
+                    onClick={() => setIsEditMode(true)}
+                  >
+                    <Edit2 size={16} />
+                    Edit Profile
+                  </button>
+                </div>
+              )}
             </form>
           </div>
-
-          
 
           {/* Danger Zone */}
           <div className="ap-card ap-danger-card">
