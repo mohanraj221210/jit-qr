@@ -20,20 +20,34 @@ import type { Department } from '../types';
 import { format, formatDistanceToNow } from 'date-fns';
 
 /* ────── Helpers ────── */
-const openPdf = (base64: string) => {
-  const byteStr = atob(base64.split(',')[1]);
-  const ab = new ArrayBuffer(byteStr.length);
-  const ia = new Uint8Array(ab);
-  for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
-  const blob = new Blob([ab], { type: 'application/pdf' });
-  window.open(URL.createObjectURL(blob), '_blank');
+const openPdf = (file: string) => {
+  if (file.startsWith('data:')) {
+    const byteStr = atob(file.split(',')[1]);
+    const ab = new ArrayBuffer(byteStr.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
+    const blob = new Blob([ab], { type: 'application/pdf' });
+    window.open(URL.createObjectURL(blob), '_blank');
+  } else {
+    window.open(file, '_blank');
+  }
 };
 
-const downloadPdf = (base64: string, name: string) => {
-  const link = document.createElement('a');
-  link.href = base64;
-  link.download = name;
-  link.click();
+const downloadPdf = (file: string, name: string) => {
+  if (file.startsWith('data:')) {
+    const link = document.createElement('a');
+    link.href = file;
+    link.download = name;
+    link.click();
+  } else {
+    const link = document.createElement('a');
+    link.href = file;
+    link.target = '_blank';
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 };
 
 /* ────── Image Lightbox ────── */
@@ -235,7 +249,7 @@ const CircularCard: React.FC<{
                 className="card-btn primary"
                 onClick={() => openPdf(circular.pdfFile!)}
               >
-                <ExternalLink size={15} /> View PDF
+                <ExternalLink size={15} /> {circular.pdfName && (circular.pdfName.toLowerCase().endsWith('.pdf') || circular.pdfName.toLowerCase().includes('pdf')) ? 'View PDF' : 'Open Document'}
               </button>
               <button
                 className="card-btn secondary"

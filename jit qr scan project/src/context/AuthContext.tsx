@@ -1,20 +1,17 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getAdminAuth, setAdminAuth, clearAdminAuth } from '../utils/storage';
-
-// Hardcoded admin credentials
-const ADMIN_EMAIL = 'admin@jit.ac.in';
-const ADMIN_PASSWORD = 'Admin@123';
-const ADMIN_TOKEN = 'jit-admin-token-2026';
+import { authService } from '../services/auth.service';
+import toast from 'react-hot-toast';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (email: string, password: string) => boolean;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
-  login: () => false,
+  login: async () => false,
   logout: () => {},
 });
 
@@ -23,23 +20,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const token = getAdminAuth();
-    if (token === ADMIN_TOKEN) {
+    if (token) {
       setIsAuthenticated(true);
     }
   }, []);
 
-  const login = useCallback((email: string, password: string): boolean => {
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      setAdminAuth(ADMIN_TOKEN);
-      setIsAuthenticated(true);
-      return true;
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+    try {
+      const token = await authService.login(email, password);
+      if (token) {
+        setAdminAuth(token);
+        setIsAuthenticated(true);
+        toast.success('Login Successful');
+        return true;
+      }
+      return false;
+    } catch (error: any) {
+      const msg = error.response?.data?.message || 'Invalid email or password. Please try again.';
+      toast.error(msg);
+      return false;
     }
-    return false;
   }, []);
 
   const logout = useCallback(() => {
     clearAdminAuth();
     setIsAuthenticated(false);
+    toast.success('Logged out successfully');
   }, []);
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Search,
   Filter,
@@ -25,7 +25,9 @@ import {
   Microscope,
   Award,
   Globe,
-  MapPin
+  MapPin,
+  ZoomIn,
+  ZoomOut
 } from 'lucide-react';
 import { useCirculars } from '../../context/CircularContext';
 import type { Circular } from '../../types';
@@ -54,19 +56,10 @@ const getPriority = (c: Circular): 'urgent' | 'important' | 'normal' => {
   return 'normal';
 };
 
-const getCategory = (c: Circular): string => {
-  const text = `${c.title} ${c.description || ''} ${c.eventName || ''}`.toLowerCase();
-  if (/(symposium|national level)/.test(text)) return 'Symposium';
-  if (/(industrial visit|iv|tour|factory)/.test(text)) return 'Industrial Visit';
-  if (/(research|paper|publication|journal)/.test(text)) return 'Research';
-  if (/(seminar|guest lecture)/.test(text)) return 'Seminar';
-  if (/(exam|test|assessment|quiz)/.test(text)) return 'Exam';
-  if (/(placement|interview|job|recruitment)/.test(text)) return 'Placement';
-  if (/(workshop|training)/.test(text)) return 'Workshop';
-  if (/(event|fest|celebration)/.test(text)) return 'Events';
-  if (/(academic|class|syllabus)/.test(text)) return 'Academic';
-  return 'Circulars';
-};
+// Read category directly from the API field — never infer from keywords.
+const getCategory = (c: Circular): string =>
+  (c.category?.trim() || 'Circulars');
+
 
 const getRotation = (id: string) => {
   let hash = 0;
@@ -79,13 +72,15 @@ const ECEDashboard: React.FC = () => {
 
   // Load ECE active circulars
   const allEcCirculars = useMemo(() => {
-    return getCircularsForDept('ECE').filter((c) => c.status === 'active');
+    return getCircularsForDept('Electronics and Communication Engineering').filter((c) => c.status === 'active');
   }, [getCircularsForDept]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedNotice, setSelectedNotice] = useState<Circular | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [viewingFile, setViewingFile] = useState<{ url: string; type: 'image' | 'pdf' } | null>(null);
+  const [zoomScale, setZoomScale] = useState(1);
 
   const filteredCirculars = useMemo(() => {
     return allEcCirculars.filter((c) => {
@@ -94,11 +89,41 @@ const ECEDashboard: React.FC = () => {
         (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const category = getCategory(c);
-      const matchCategory = selectedCategory === 'All' || category === selectedCategory;
+      const matchCategory =
+        selectedCategory === 'All' ||
+        category.trim().toLowerCase() === selectedCategory.trim().toLowerCase();
 
       return matchSearch && matchCategory;
     });
   }, [allEcCirculars, searchQuery, selectedCategory]);
+
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory]);
+
+  const totalPages = Math.ceil(filteredCirculars.length / 10);
+
+  const paginatedCirculars = useMemo(() => {
+    return filteredCirculars.slice(0, currentPage * 10);
+  }, [filteredCirculars, currentPage]);
+
+  const observerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+        }
+      },
+      { rootMargin: '100px' }
+    );
+    if (observerRef.current) observer.observe(observerRef.current);
+    return () => observer.disconnect();
+  }, [totalPages]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -119,20 +144,40 @@ const ECEDashboard: React.FC = () => {
     } catch (err) {}
   };
 
-  const downloadPdf = (base64: string, name: string) => {
-    const link = document.createElement('a');
-    link.href = base64;
-    link.download = name;
-    link.click();
+  const downloadFile = (file: string, name: string) => {
+    if (file.startsWith('data:')) {
+      const link = document.createElement('a');
+      link.href = file;
+      link.download = name;
+      link.click();
+    } else {
+      const link = document.createElement('a');
+      link.href = file;
+      link.target = '_blank';
+      link.download = name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
-  const openPdf = (base64: string) => {
-    const byteStr = atob(base64.split(',')[1]);
-    const ab = new ArrayBuffer(byteStr.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
-    const blob = new Blob([ab], { type: 'application/pdf' });
-    window.open(URL.createObjectURL(blob), '_blank');
+  const openViewer = (file: string, type: 'image' | 'pdf') => {
+    if (file.startsWith('data:')) {
+      const mimeMatch = file.match(/^data:([^;]+);base64,/);
+      const mime = mimeMatch ? mimeMatch[1] : (type === 'image' ? 'image/png' : 'application/pdf');
+      const byteStr = atob(file.split(',')[1]);
+      const ab = new ArrayBuffer(byteStr.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
+      const blob = new Blob([ab], { type: mime });
+      setViewingFile({ url: URL.createObjectURL(blob), type });
+    } else {
+      setViewingFile({ url: file, type });
+    }
+  };
+
+  const openPdf = (file: string) => {
+    openViewer(file, 'pdf');
   };
 
   useEffect(() => {
@@ -255,8 +300,9 @@ const ECEDashboard: React.FC = () => {
             </div>
           </>
         ) : (
-          <div className="ec-papers-grid">
-            {filteredCirculars.map((c) => {
+          <>
+            <div className="ec-papers-grid">
+            {paginatedCirculars.map((c) => {
               const rot = getRotation(c.id);
               const prio = getPriority(c);
               const expires = formatDistanceToNow(new Date(c.expiryDate), { addSuffix: true });
@@ -290,8 +336,15 @@ const ECEDashboard: React.FC = () => {
               );
             })}
           </div>
-        )}
-      </main>
+
+          {currentPage < totalPages && (
+            <div ref={observerRef} className="ec-pagination-sentinel" style={{ height: '40px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0' }}>
+              <div className="spinner sm" style={{ borderTopColor: 'var(--text-dark, #333)' }}></div>
+            </div>
+          )}
+        </>
+      )}
+    </main>
 
       {/* ────────────── FOOTER ────────────── */}
       
@@ -312,24 +365,130 @@ const ECEDashboard: React.FC = () => {
               </div>
             </div>
             
+            {selectedNotice.posterImage && (
+              <div 
+                onClick={() => openViewer(selectedNotice.posterImage!, 'image')}
+                style={{ cursor: 'pointer', marginBottom: 20, textAlign: 'center', borderRadius: 6, overflow: 'hidden', border: '1px solid #E5E7EB', backgroundColor: '#f9fafb' }}
+                title="Click to view fullscreen"
+              >
+                <img
+                  src={selectedNotice.posterImage}
+                  alt={selectedNotice.title}
+                  style={{ maxWidth: '100%', maxHeight: '350px', objectFit: 'contain', display: 'block', margin: '0 auto' }}
+                />
+                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '6px', textAlign: 'center' }}>
+                  🔍 Click to view full screen
+                </div>
+              </div>
+            )}
+
             <div style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--ec-text-dark)', marginBottom: 24, whiteSpace: 'pre-wrap' }}>
               {selectedNotice.description}
             </div>
 
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {selectedNotice.posterImage && (
+                <button onClick={() => downloadFile(selectedNotice.posterImage!, selectedNotice.title + '.png')} style={{ flex: 1, padding: '10px', background: 'white', color: 'var(--ec-text-dark)', border: '1px solid #D1D5DB', borderRadius: 4, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <Download size={16} /> Download Poster
+                </button>
+              )}
               {selectedNotice.pdfFile && (
                 <>
                   <button onClick={() => openPdf(selectedNotice.pdfFile!)} style={{ flex: 1, padding: '10px', background: 'var(--ec-primary)', color: 'white', border: 'none', borderRadius: 4, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                     <FileText size={16} /> View PDF
                   </button>
-                  <button onClick={() => downloadPdf(selectedNotice.pdfFile!, selectedNotice.pdfName ?? 'notice.pdf')} style={{ flex: 1, padding: '10px', background: 'white', color: 'var(--ec-text-dark)', border: '1px solid #D1D5DB', borderRadius: 4, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                    <Download size={16} /> Download
+                  <button onClick={() => downloadFile(selectedNotice.pdfFile!, selectedNotice.pdfName ?? 'notice.pdf')} style={{ flex: 1, padding: '10px', background: 'white', color: 'var(--ec-text-dark)', border: '1px solid #D1D5DB', borderRadius: 4, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    <Download size={16} /> Download PDF
                   </button>
                 </>
               )}
               <button onClick={() => handleShare(selectedNotice)} style={{ padding: '10px', background: 'white', color: 'var(--ec-text-dark)', border: '1px solid #D1D5DB', borderRadius: 4, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                 <Share2 size={16} />
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* ────────────── UNIFIED FILE VIEWER MODAL ────────────── */}
+      {viewingFile && (
+        <div className="pdf-viewer-overlay" onClick={() => { setViewingFile(null); setZoomScale(1); }}>
+          <div className="pdf-viewer-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="pdf-viewer-header">
+              <h3>${viewingFile.type === 'image' ? 'Circular Image' : 'Circular Document'}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button 
+                  className="pdf-viewer-close" 
+                  onClick={() => setZoomScale(prev => Math.max(prev - 0.25, 0.5))}
+                  title="Zoom Out"
+                  style={{ marginRight: '4px' }}
+                >
+                  <ZoomOut size={18} />
+                </button>
+                <span style={{ fontSize: '13px', fontWeight: 600, minWidth: '40px', textAlign: 'center' }}>
+                  ${Math.round(zoomScale * 100)}%
+                </span>
+                <button 
+                  className="pdf-viewer-close" 
+                  onClick={() => setZoomScale(prev => Math.min(prev + 0.25, 3))}
+                  title="Zoom In"
+                  style={{ marginRight: '16px' }}
+                >
+                  <ZoomIn size={18} />
+                </button>
+                <button 
+                  className="pdf-viewer-close" 
+                  onClick={() => setZoomScale(1)}
+                  title="Reset Zoom"
+                  style={{ marginRight: '16px' }}
+                >
+                  Reset
+                </button>
+                <button className="pdf-viewer-close" onClick={() => { setViewingFile(null); setZoomScale(1); }}>
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+            <div className="pdf-viewer-body" style={{ overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+              ${viewingFile.type === 'image' ? (
+                <div style={{ 
+                  overflow: 'auto', 
+                  width: '100%', 
+                  height: '100%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center' 
+                }}>
+                  <img
+                    src={viewingFile.url}
+                    alt="Circular Content"
+                    style={{
+                      transform: `scale(${zoomScale})`,
+                      transformOrigin: 'center center',
+                      transition: 'transform 0.2s ease',
+                      maxHeight: '100%',
+                      maxWidth: '100%',
+                      objectFit: 'contain'
+                    }}
+                  />
+                </div>
+              ) : (
+                <div style={{ 
+                  width: '100%',
+                  height: '100%',
+                  transform: `scale(${zoomScale})`,
+                  transformOrigin: 'top center',
+                  transition: 'transform 0.2s ease'
+                }}>
+                  <iframe
+                    src={viewingFile.url}
+                    title="Circular Document"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 'none' }}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
