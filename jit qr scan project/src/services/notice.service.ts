@@ -142,8 +142,12 @@ export const noticeService = {
     return response.data;
   },
 
-  async getNotices(page: number = 1): Promise<PaginatedNotices> {
-    const response = await apiClient.get<any>(`/admin/get/notice?page=${page}`);
+  async getNotices(page: number = 1, isAdmin: boolean = false, department?: string): Promise<PaginatedNotices> {
+    let url = isAdmin ? `/admin/get/notice?page=${page}` : `/user/get/notice?page=${page}`;
+    if (department) {
+      url += `&department=${encodeURIComponent(department)}`;
+    }
+    const response = await apiClient.get<any>(url);
     const data = response.data;
 
     // Handle both direct array and wrapped paginated structures robustly

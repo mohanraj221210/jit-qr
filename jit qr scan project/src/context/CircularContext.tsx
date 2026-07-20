@@ -6,6 +6,7 @@ import React, {
   useCallback,
 } from 'react';
 import type { Circular, Department, NoticeUploadPayload } from '../types';
+import { DEPT_ROUTES } from '../types';
 import { noticeService } from '../services/notice.service';
 import toast from 'react-hot-toast';
 import { getAdminAuth } from '../utils/storage';
@@ -54,10 +55,17 @@ export const CircularProvider: React.FC<{ children: React.ReactNode }> = ({
   // Cache/store all active circulars for department dashboards to read
   const [deptCirculars, setDeptCirculars] = useState<Circular[]>([]);
 
+  const getDepartmentFromPath = (path: string): string | undefined => {
+    const entry = Object.entries(DEPT_ROUTES).find(([_, route]) => path === route);
+    return entry ? entry[0] : undefined;
+  };
+
   const fetchPage = useCallback(async (pageNum: number) => {
     setLoading(true);
     try {
-      const result = await noticeService.getNotices(pageNum);
+      const isAdmin = location.pathname.startsWith('/admin');
+      const dept = getDepartmentFromPath(location.pathname);
+      const result = await noticeService.getNotices(pageNum, isAdmin, dept);
       setCirculars(result.notices);
       setTotalPages(result.totalPages);
       setTotal(result.total);
@@ -66,18 +74,20 @@ export const CircularProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [location.pathname]);
 
   // Fetch a larger set or poll in background for department views
   const fetchDeptCirculars = useCallback(async () => {
     try {
-      const result = await noticeService.getNotices(1);
+      const isAdmin = location.pathname.startsWith('/admin');
+      const dept = getDepartmentFromPath(location.pathname);
+      const result = await noticeService.getNotices(1, isAdmin, dept);
       let allNotices = [...result.notices];
 
       if (result.totalPages > 1) {
         const promises = [];
         for (let p = 2; p <= Math.min(result.totalPages, 10); p++) {
-          promises.push(noticeService.getNotices(p));
+          promises.push(noticeService.getNotices(p, isAdmin, dept));
         }
         const pages = await Promise.all(promises);
         pages.forEach(p => {
@@ -88,7 +98,7 @@ export const CircularProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (err) {
       console.error('Failed to fetch dept circulars:', err);
     }
-  }, []);
+  }, [location.pathname]);
 
   const pageRef = React.useRef(page);
   useEffect(() => {
