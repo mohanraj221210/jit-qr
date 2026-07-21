@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import imageCompression from "browser-image-compression";
-import { PDFDocument } from "pdf-lib";
+import { compressPdfFile, formatFileSize } from '../utils/CompressFile';
 import {
   LayoutDashboard,
   LogOut,
@@ -597,6 +597,12 @@ const UploadModal: React.FC<{
   );
   const [pdfName, setPdfName] = useState<string | null>(editCircular?.pdfName ?? null);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionProgress, setCompressionProgress] = useState(0);
+  const [pdfSizeInfo, setPdfSizeInfo] = useState<{
+    originalSize: string;
+    compressedSize: string;
+    wasCompressed: boolean;
+  } | null>(null);
 
   const now = new Date();
   const defaultStart = format(now, "yyyy-MM-dd'T'HH:mm");
@@ -629,11 +635,10 @@ const UploadModal: React.FC<{
 
   const compressAttachment = async (file: File): Promise<File | null> => {
     setIsCompressing(true);
+    setCompressionProgress(10);
     setUploadError(null);
     setErrors([]);
     try {
-      // ── IMAGE FILES ──────────────────────────────────────────────────
-      // Compress first, validate size AFTER — never reject before trying.
       if (file.type.startsWith('image/')) {
         const originalMime = file.type as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif' | 'image/bmp';
         const options = {
@@ -644,11 +649,13 @@ const UploadModal: React.FC<{
           initialQuality: 0.85,
         };
         const compressed = await imageCompression(file, options);
+        setCompressionProgress(90);
         const safeType = compressed.type.startsWith('image/') ? compressed.type : originalMime;
         const result = new File([compressed], file.name, {
           type: safeType,
           lastModified: Date.now(),
         });
+        setCompressionProgress(100);
         if (result.size > 5 * 1024 * 1024) {
           setUploadError('Unable to compress this file below the 5 MB upload limit.');
           return null;
@@ -656,41 +663,36 @@ const UploadModal: React.FC<{
         return result;
       }
 
-      // ── PDF FILES ────────────────────────────────────────────────────
-      // Compress with pdf-lib first, then validate — never reject before trying.
-      if (file.type === 'application/pdf') {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
-        const compressedBytes = await pdfDoc.save({
-          useObjectStreams: true,
-          addDefaultPage: false,
-          objectsPerTick: 50,
-        });
-        const compressed = new File([compressedBytes.buffer as ArrayBuffer], file.name, {
-          type: 'application/pdf',
-          lastModified: Date.now(),
-        });
-        if (compressed.size > 5 * 1024 * 1024) {
-          setUploadError('Unable to compress this file below the 5 MB upload limit.');
+      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        const { compressedFile, originalSize, compressedSize } = await compressPdfFile(
+          file,
+          (progress) => setCompressionProgress(progress)
+        );
+        if (compressedSize > 5 * 1024 * 1024) {
+          setUploadError('This PDF could not be compressed below 5 MB. Please upload a smaller PDF file.');
           return null;
         }
-        return compressed;
+        setPdfSizeInfo({
+          originalSize: formatFileSize(originalSize),
+          compressedSize: formatFileSize(compressedSize),
+          wasCompressed: originalSize > 5 * 1024 * 1024,
+        });
+        return compressedFile;
       }
 
-      // ── OFFICE DOCUMENTS & OTHER FILES ──────────────────────────────
-      // No format conversion. Upload unchanged if within limit.
       if (file.size <= 5 * 1024 * 1024) {
-        await new Promise((resolve) => setTimeout(resolve, 600));
+        setCompressionProgress(100);
         return file;
       }
       setUploadError('This document exceeds the 5 MB upload limit. Please compress it manually before uploading.');
       return null;
     } catch (err) {
       console.error('Compression failed:', err);
-      setUploadError('Unable to compress this file below the 5 MB upload limit.');
+      setUploadError('This PDF could not be compressed below 5 MB. Please upload a smaller PDF file.');
       return null;
     } finally {
       setIsCompressing(false);
+      setCompressionProgress(0);
     }
   };
 
@@ -720,41 +722,39 @@ const UploadModal: React.FC<{
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const allowedTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-powerpoint',
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-      'text/plain',
-      'application/zip',
-      'application/x-zip-compressed',
-      'image/png',
-      'image/jpeg',
-      'image/jpg',
-      'image/webp',
-      'image/gif'
-    ];
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 
-    const isAllowedExt = /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|zip|gz|png|jpg|jpeg|webp|gif)$/i.test(file.name);
-
-    if (!allowedTypes.includes(file.type) && !isAllowedExt) {
-      setErrors(["Unsupported file type. Please upload PDF, Word, Excel, PowerPoint, Text, Zip, or Image."]);
+    if (!isPdf) {
+      setErrors(["Only PDF (.pdf) files are accepted for document upload."]);
+      setUploadError("Only PDF (.pdf) files are accepted for document upload.");
       return;
     }
 
-    const compressed = await compressAttachment(file);
-    if (compressed) {
-      setAttachmentFile(compressed);
-      setUploadError(null);
-      if (compressed.type.startsWith('image/')) {
-        setPosterPreview(URL.createObjectURL(compressed));
-        setPdfName(null);
-      } else {
+    setUploadError(null);
+    setErrors([]);
+    setPdfSizeInfo(null);
+
+    const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+
+    if (file.size <= MAX_SIZE) {
+      setAttachmentFile(file);
+      setPdfName(file.name);
+      setPosterPreview(null);
+      setPdfSizeInfo({
+        originalSize: formatFileSize(file.size),
+        compressedSize: formatFileSize(file.size),
+        wasCompressed: false,
+      });
+    } else {
+      const compressed = await compressAttachment(file);
+      if (compressed) {
+        setAttachmentFile(compressed);
         setPdfName(compressed.name);
         setPosterPreview(null);
+        setUploadError(null);
+      } else {
+        setAttachmentFile(null);
+        setPdfName(null);
       }
     }
   };
@@ -768,7 +768,7 @@ const UploadModal: React.FC<{
     if (startDate && expiryDate && new Date(expiryDate) <= new Date(startDate))
       errs.push('Expiry must be after start date.');
     if (!editCircular && !attachmentFile) {
-      errs.push('Please upload an attachment (Poster or Document).');
+      errs.push('Please upload an attachment (Poster or PDF Document).');
     }
     if (attachmentFile && attachmentFile.size > 5 * 1024 * 1024) {
       errs.push('Attachment size must be below 5 MB.');
@@ -819,7 +819,16 @@ const UploadModal: React.FC<{
           {isCompressing && (
             <div className="ad-compressing-overlay">
               <div className="ad-compressing-spinner"></div>
-              <span className="ad-compressing-text">Compressing...</span>
+              <span className="ad-compressing-text">Compressing PDF...</span>
+              <div className="ad-compression-progress-container">
+                <div className="ad-compression-progress-bar">
+                  <div
+                    className="ad-compression-progress-fill"
+                    style={{ width: `${compressionProgress}%` }}
+                  ></div>
+                </div>
+                <span className="ad-compression-status-text">{compressionProgress}%</span>
+              </div>
             </div>
           )}
 
@@ -905,19 +914,30 @@ const UploadModal: React.FC<{
                   <>
                     <FileText size={32} className="ad-upload-icon ad-success-icon" />
                     <p className="ad-pdf-name">{pdfName}</p>
-                    <span>Click to change document</span>
+                    {pdfSizeInfo && (
+                      <div className={`ad-pdf-size-badge ${pdfSizeInfo.wasCompressed ? 'ad-size-compressed' : 'ad-size-ok'}`}>
+                        {pdfSizeInfo.wasCompressed ? (
+                          <span className="ad-pdf-size-change">
+                            {pdfSizeInfo.originalSize} → {pdfSizeInfo.compressedSize} (Compressed)
+                          </span>
+                        ) : (
+                          <span>Size: {pdfSizeInfo.compressedSize}</span>
+                        )}
+                      </div>
+                    )}
+                    <span style={{ marginTop: '6px' }}>Click to change document</span>
                   </>
                 ) : (
                   <>
                     <FilePlus size={32} className="ad-upload-icon" />
-                    <p>Click to upload document</p>
-                    <span>PDF, Word, Excel, PPT, TXT, ZIP, Images</span>
+                    <p>Click to upload PDF circular</p>
+                    <span>PDF files only (Auto-compressed if &gt; 5 MB)</span>
                   </>
                 )}
                 <input
                   ref={pdfRef}
                   type="file"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.gz,.png,.jpg,.jpeg,.webp,.gif"
+                  accept=".pdf,application/pdf"
                   style={{ display: 'none' }}
                   onChange={handlePdfChange}
                   disabled={isCompressing}
