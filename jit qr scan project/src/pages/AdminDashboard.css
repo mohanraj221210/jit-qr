@@ -1929,6 +1929,107 @@
   box-shadow: 0 0 0 3px rgba(22, 58, 112, 0.1);
 }
 
+/* ─── PDF Compression & Size Indicator Styles ─── */
+.ad-compression-progress-container {
+  width: 80%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.ad-compression-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.ad-compression-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ac8530, #d4af37);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.ad-compression-status-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ad-text-2);
+}
+
+.ad-pdf-size-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-top: 6px;
+}
+
+.ad-pdf-size-badge.ad-size-ok {
+  background: rgba(34, 197, 94, 0.12);
+  color: #15803d;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.ad-pdf-size-badge.ad-size-compressed {
+  background: rgba(172, 133, 48, 0.12);
+  color: #855e14;
+  border: 1px solid rgba(172, 133, 48, 0.3);
+}
+
+.ad-pdf-size-change {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ad-upload-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 10px 14px;
+  border-radius: var(--ad-radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 12px;
+  line-height: 1.4;
+}
+
+.ad-upload-error-icon {
+  color: #dc2626;
+  flex-shrink: 0;
+}
+
+.ad-upload-error-dismiss {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #991b1b;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ad-upload-error-dismiss:hover {
+  background: rgba(220, 38, 38, 0.1);
+}
+
+
 
 
 

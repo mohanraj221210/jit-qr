@@ -8,6 +8,7 @@ import React, {
 import type { Circular, Department, NoticeUploadPayload } from '../types';
 import { DEPT_ROUTES } from '../types';
 import { noticeService } from '../services/notice.service';
+import { compressFile, MAX_FILE_SIZE } from '../utils/CompressFile';
 import toast from 'react-hot-toast';
 import { getAdminAuth } from '../utils/storage';
 import { useAuth } from './AuthContext';
@@ -139,11 +140,14 @@ export const CircularProvider: React.FC<{ children: React.ReactNode }> = ({
   const addNewCircular = useCallback(
     async (noticeData: NoticeUploadPayload) => {
       try {
+        if (noticeData.attachments instanceof File && noticeData.attachments.size > MAX_FILE_SIZE) {
+          noticeData.attachments = await compressFile(noticeData.attachments);
+        }
         await noticeService.createNotice(noticeData);
         toast.success('Notice Created Successfully');
         refreshCirculars();
       } catch (err: any) {
-        const msg = err.response?.data?.message || 'Failed to create notice.';
+        const msg = err.message || err.response?.data?.message || 'Failed to create notice.';
         toast.error(msg);
         throw err;
       }
@@ -154,11 +158,14 @@ export const CircularProvider: React.FC<{ children: React.ReactNode }> = ({
   const editCircular = useCallback(
     async (id: string, noticeData: NoticeUploadPayload) => {
       try {
+        if (noticeData.attachments instanceof File && noticeData.attachments.size > MAX_FILE_SIZE) {
+          noticeData.attachments = await compressFile(noticeData.attachments);
+        }
         await noticeService.updateNotice(id, noticeData);
         toast.success('Notice Updated Successfully');
         refreshCirculars();
       } catch (err: any) {
-        const msg = err.response?.data?.message || 'Failed to update notice.';
+        const msg = err.message || err.response?.data?.message || 'Failed to update notice.';
         toast.error(msg);
         throw err;
       }
