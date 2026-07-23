@@ -209,7 +209,7 @@ const MBADashboard: React.FC = () => {
           <Globe className="mba-sign-bg-icon" size={24} style={{ top: 75, left: 200 }} />
 
           <div className="mba-signboard-top">
-            <img src="/jitnotice.png" alt="JIT Logo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
+            <img src="/noticelogo.png" alt="JIT Logo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
             <div style={{ textAlign: 'left' }}>
               <h1 className="mba-sign-title">MASTER OF BUSINESS<br />ADMINISTRATION</h1>
               <div className="mba-sign-subtitle">DIGITAL NOTICE BOARD</div>

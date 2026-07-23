@@ -211,7 +211,7 @@ const MechanicalDashboard: React.FC = () => {
           <Truck className="mech-sign-bg-icon" size={24} style={{ top: 75, left: 200 }} />
 
           <div className="mech-signboard-top">
-            <img src="/jitnotice.png" alt="JIT Logo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
+            <img src="/noticelogo.png" alt="JIT Logo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
             <div style={{ textAlign: 'left' }}>
               <h1 className="mech-sign-title">MECHANICAL<br />ENGINEERING</h1>
               <div className="mech-sign-subtitle">DIGITAL NOTICE BOARD</div>

@@ -216,7 +216,7 @@ const CSEDashboard: React.FC = () => {
           <Server className="cs-sign-bg-icon" size={16} style={{ bottom: 25, left: 210 }} />
 
           <div className="cs-signboard-top">
-            <img src="/jitnotice.png" alt="JIT Logo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
+            <img src="/noticelogo.png" alt="JIT Logo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
             <div style={{ textAlign: 'left' }}>
               <h1 className="cs-sign-title">COMPUTER SCIENCE<br />& ENGINEERING</h1>
               <div className="cs-sign-subtitle">DIGITAL NOTICE BOARD</div>

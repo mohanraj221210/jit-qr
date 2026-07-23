@@ -197,7 +197,7 @@ const ITDashboard: React.FC = () => {
 
           <div className="it-signboard-top">
 
-            <img src="/jitnotice.png" alt="JIT Permigo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
+            <img src="/noticelogo.png" alt="JIT Permigo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
             <div style={{ textAlign: 'left' }}>
               <h1 className="it-sign-title">IT DEPARTMENT</h1>
               <div className="it-sign-subtitle">DIGITAL NOTICE BOARD</div>

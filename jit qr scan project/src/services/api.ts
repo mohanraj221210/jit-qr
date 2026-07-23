@@ -29,15 +29,14 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
     const data = error.response?.data;
 
-    if (status === 401) {
+    if (status === 401 || status === 403) {
       clearAdminAuth();
       // Redirect to login page if window is defined and not already on /login
       if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-        toast.error('Session expired. Please login again.');
+        const msg = status === 401 ? 'Session expired. Please login again.' : 'Access denied. You do not have permissions.';
+        toast.error(msg);
         window.location.href = '/login';
       }
-    } else if (status === 403) {
-      toast.error('Access denied. You do not have permissions.');
     } else if (status === 404) {
       toast.error('Resource not found.');
     } else if (status >= 500) {

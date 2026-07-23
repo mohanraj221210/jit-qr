@@ -215,7 +215,7 @@ const CSBSDashboard: React.FC = () => {
           <Cloud className="csbs-sign-bg-icon" size={24} style={{ top: 75, left: 200 }} />
 
           <div className="csbs-signboard-top">
-            <img src="/jitnotice.png" alt="JIT Logo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
+            <img src="/noticelogo.png" alt="JIT Logo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
             <div style={{ textAlign: 'left' }}>
               <h1 className="csbs-sign-title">COMPUTER SCIENCE<br />& BUSINESS SYSTEMS</h1>
               <div className="csbs-sign-subtitle">DIGITAL NOTICE BOARD</div>
@@ -356,7 +356,7 @@ const CSBSDashboard: React.FC = () => {
       {/* ────────────── FOOTER ────────────── */}
       <footer className="csbs-footer">
         <div style={{ padding: 2 }}>
-          <img src="/jitnotice.png" alt="JIT Logo" style={{ width: 32, height: 32, borderRadius: 2 }} />
+          <img src="/noticelogo.png" alt="JIT Logo" style={{ width: 32, height: 32, borderRadius: 2 }} />
         </div>
         <div className="csbs-footer-center">
           <p className="csbs-footer-text">Powered by JIT QR NOTICE</p>

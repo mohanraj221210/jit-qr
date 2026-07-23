@@ -16,12 +16,12 @@ const SEO: React.FC<SEOProps> = ({
   description,
   keywords = 'JIT Notice, Jeppiaar Notice, JIT Digital Notice, JIT Notice Board, JIT Circular',
   url = typeof window !== 'undefined' ? window.location.href : '',
-  image = '/jitnotice.png',
+  image = '/noticelogo.png',
   type = 'website',
   schema,
 }) => {
   const siteName = 'JIT Digital Notice Board';
-  
+
   return (
     <Helmet>
       {/* Standard Metadata */}

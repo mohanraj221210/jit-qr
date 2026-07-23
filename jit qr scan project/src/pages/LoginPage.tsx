@@ -138,13 +138,13 @@ const LoginPage: React.FC = () => {
                 <input type="checkbox" className="checkbox-custom" />
                 <span>Remember me</span>
               </label>
-              <a
+              {/* <a
                 href="#forgot"
                 className="forgot-password-link"
                 onClick={(e) => e.preventDefault()}
               >
                 Forgot Password?
-              </a>
+              </a> */}
             </div>
 
             {error && (
@@ -169,7 +169,7 @@ const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          <div className="login-hint-redesign">
+          {/* <div className="login-hint-redesign">
             <div className="demo-badge">Demo Login</div>
             <div className="demo-creds">
               <div className="demo-cred-item">
@@ -181,7 +181,7 @@ const LoginPage: React.FC = () => {
                 <code>12345678</code>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="security-divider">
             <span>

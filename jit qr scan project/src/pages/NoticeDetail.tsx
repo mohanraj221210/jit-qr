@@ -22,10 +22,10 @@ const NoticeDetail: React.FC = () => {
         // Extract ID from slug-id
         const parts = slugId.split('-');
         const id = parts[parts.length - 1]; // Assuming ID is the last part
-        
+
         // Ensure id exists and is valid
         if (!id) throw new Error('Invalid URL');
-        
+
         const data = await noticeService.getNoticeById(id);
         setNotice(data);
       } catch (err: any) {
@@ -48,7 +48,7 @@ const NoticeDetail: React.FC = () => {
           url: window.location.href,
         });
       }
-    } catch (err) {}
+    } catch (err) { }
   };
 
   const downloadFile = (file: string, name: string) => {
@@ -88,7 +88,7 @@ const NoticeDetail: React.FC = () => {
 
   const category = notice.category || 'Circulars';
   const expires = formatDistanceToNow(new Date(notice.expiryDate), { addSuffix: true });
-  
+
   // JSON-LD Article Schema
   const schema = {
     "@context": "https://schema.org",
@@ -106,21 +106,21 @@ const NoticeDetail: React.FC = () => {
       "name": "Jeppiaar Institute of Technology",
       "logo": {
         "@type": "ImageObject",
-        "url": `${window.location.origin}/jitnotice.png`
+        "url": `${window.location.origin}/noticelogo.png`
       }
     }
   };
 
   return (
     <div className="nd-page">
-      <SEO 
+      <SEO
         title={`${notice.title} | JIT Notice`}
         description={notice.description || `Official notice regarding ${notice.title} from Jeppiaar Institute of Technology.`}
         type="article"
-        image={notice.posterImage || '/jitnotice.png'}
+        image={notice.posterImage || '/noticelogo.png'}
         schema={schema}
       />
-      
+
       <header className="nd-header">
         <div className="nd-header-inner">
           <button className="nd-back-btn" onClick={() => navigate(-1)} aria-label="Go back">
@@ -137,9 +137,9 @@ const NoticeDetail: React.FC = () => {
           <div className="nd-meta-top">
             <span className="nd-category-badge">{category}</span>
           </div>
-          
+
           <h1 className="nd-title">{notice.title}</h1>
-          
+
           <div className="nd-meta-row">
             <div className="nd-meta-item" title="Date Published">
               <Calendar size={16} />
@@ -152,10 +152,10 @@ const NoticeDetail: React.FC = () => {
           </div>
 
           {notice.posterImage && (
-            <img 
-              src={notice.posterImage} 
-              alt={`Poster for ${notice.title}`} 
-              className="nd-poster" 
+            <img
+              src={notice.posterImage}
+              alt={`Poster for ${notice.title}`}
+              className="nd-poster"
               loading="lazy"
             />
           )}
@@ -166,8 +166,8 @@ const NoticeDetail: React.FC = () => {
 
           <div className="nd-actions">
             {notice.posterImage && (
-              <button 
-                className="nd-btn nd-btn-secondary" 
+              <button
+                className="nd-btn nd-btn-secondary"
                 onClick={() => downloadFile(notice.posterImage!, notice.title + '.png')}
               >
                 <Download size={16} /> Download Image
@@ -175,14 +175,14 @@ const NoticeDetail: React.FC = () => {
             )}
             {notice.pdfFile && (
               <>
-                <button 
-                  className="nd-btn nd-btn-primary" 
+                <button
+                  className="nd-btn nd-btn-primary"
                   onClick={() => window.open(notice.pdfFile!, '_blank')}
                 >
                   <FileText size={16} /> View PDF
                 </button>
-                <button 
-                  className="nd-btn nd-btn-secondary" 
+                <button
+                  className="nd-btn nd-btn-secondary"
                   onClick={() => downloadFile(notice.pdfFile!, notice.pdfName ?? 'notice.pdf')}
                 >
                   <Download size={16} /> Download PDF

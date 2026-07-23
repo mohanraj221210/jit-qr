@@ -4,6 +4,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CircularProvider } from './context/CircularContext';
+import { getAdminAuth, clearAdminAuth } from './utils/storage';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ITDashboard from './pages/departments/ITDashboard';
@@ -17,9 +18,13 @@ import HomePage from './pages/HomePage';
 import NoticeDetail from './pages/NoticeDetail';
 
 /* Protected Route for Admin */
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+const ProtectedAdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const token = getAdminAuth();
+  if (!token || token.trim() === '') {
+    clearAdminAuth();
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
 };
 
 function AppRoutes() {
@@ -33,9 +38,9 @@ function AppRoutes() {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute>
+          <ProtectedAdminRoute>
             <AdminDashboard />
-          </ProtectedRoute>
+          </ProtectedAdminRoute>
         }
       />
       <Route path="/" element={<HomePage />} />

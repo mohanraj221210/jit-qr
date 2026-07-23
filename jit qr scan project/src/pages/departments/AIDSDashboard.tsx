@@ -207,7 +207,7 @@ const AIDSDashboard: React.FC = () => {
           <Laptop className="ai-sign-bg-icon" size={20} style={{ top: 25, right: 150 }} />
 
           <div className="ai-signboard-top">
-            <img src="/jitnotice.png" alt="JIT Logo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
+            <img src="/noticelogo.png" alt="JIT Logo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
             <div style={{ textAlign: 'left' }}>
               <h1 className="ai-sign-title">AI&DS DEPARTMENT</h1>
               <div className="ai-sign-subtitle">DIGITAL NOTICE BOARD</div>
