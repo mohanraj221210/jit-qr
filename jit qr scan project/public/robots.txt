@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /notice/
+Allow: /it
+Allow: /cse
+Allow: /ece
+Allow: /aids
+Allow: /mechanical
+Allow: /csbs
+Allow: /mba
+
+Disallow: /admin
+Disallow: /login
+Disallow: /dashboard
+Disallow: /private
+
+Sitemap: https://jitnotice.com/sitemap.xml

@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CircularProvider } from './context/CircularContext';
@@ -12,6 +13,8 @@ import AIDSDashboard from './pages/departments/AIDSDashboard';
 import MechanicalDashboard from './pages/departments/MechanicalDashboard';
 import CSBSDashboard from './pages/departments/CSBSDashboard';
 import MBADashboard from './pages/departments/MBADashboard';
+import HomePage from './pages/HomePage';
+import NoticeDetail from './pages/NoticeDetail';
 
 /* Protected Route for Admin */
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -35,6 +38,8 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/" element={<HomePage />} />
+      <Route path="/notice/:slugId" element={<NoticeDetail />} />
       <Route path="/it" element={<ITDashboard />} />
       <Route path="/cse" element={<CSEDashboard />} />
       <Route path="/ece" element={<ECEDashboard />} />
@@ -42,33 +47,34 @@ function AppRoutes() {
       <Route path="/mechanical" element={<MechanicalDashboard />} />
       <Route path="/csbs" element={<CSBSDashboard />} />
       <Route path="/mba" element={<MBADashboard />} />
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <CircularProvider>
-          <AppRoutes />
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 3000,
-              style: {
-                borderRadius: '12px',
-                background: '#1e293b',
-                color: '#f8fafc',
-                fontFamily: 'Inter, sans-serif',
-              },
-            }}
-          />
-        </CircularProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <CircularProvider>
+            <AppRoutes />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 3000,
+                style: {
+                  borderRadius: '12px',
+                  background: '#1e293b',
+                  color: '#f8fafc',
+                  fontFamily: 'Inter, sans-serif',
+                },
+              }}
+            />
+          </CircularProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }
 

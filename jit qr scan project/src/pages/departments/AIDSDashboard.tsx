@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import SEO from '../../components/SEO';
+import slugify from 'slugify';
 import {
   Search,
   Filter,
@@ -184,6 +186,7 @@ const AIDSDashboard: React.FC = () => {
 
   return (
     <div className="ai-wrapper">
+      <SEO title="AI&DS Department Notices | JIT" description="Digital Notice Board for Artificial Intelligence and Data Science Department at Jeppiaar Institute of Technology." />
       
       {/* ────────────── TOP SIGNBOARD ────────────── */}
       <div className="ai-signboard-wood">
@@ -312,7 +315,7 @@ const AIDSDashboard: React.FC = () => {
                 >
                   <div className={`ai-push-pin pin-${prio === 'urgent' ? 'red' : prio === 'important' ? 'purple' : 'cyan'}`} />
                   
-                  <h3 className="ai-paper-title" style={{ textAlign: 'left', marginTop: 16 }}>{c.title}</h3>
+                  <a href={`/notice/${slugify(c.title || 'notice', { lower: true, strict: true })}-${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); setSelectedNotice(c); }}><h3 className="ai-paper-title" style={{ textAlign: 'left', marginTop: 16 }}>{c.title}</h3></a>
                   <div className="ai-paper-subtitle" style={{ textAlign: 'left', marginBottom: 16, display: '-webkit-box', WebkitLineClamp: 3, lineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {c.description || 'No description provided.'}
                   </div>

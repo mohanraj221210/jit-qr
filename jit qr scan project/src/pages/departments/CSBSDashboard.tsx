@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import SEO from '../../components/SEO';
+import slugify from 'slugify';
 import {
   Search,
   Filter,
@@ -191,6 +193,7 @@ const CSBSDashboard: React.FC = () => {
 
   return (
     <div className="csbs-wrapper">
+      <SEO title="CSBS Department Notices | JIT" description="Digital Notice Board for Computer Science and Business System Department at Jeppiaar Institute of Technology." />
 
       {/* ────────────── TOP SIGNBOARD ────────────── */}
       <div className="csbs-signboard-wood">
@@ -327,7 +330,7 @@ const CSBSDashboard: React.FC = () => {
                       </div>
                     )}
 
-                    <h3 className="csbs-paper-title">{c.title}</h3>
+                    <a href={`/notice/${slugify(c.title || 'notice', { lower: true, strict: true })}-${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); setSelectedNotice(c); }}><h3 className="csbs-paper-title">{c.title}</h3></a>
                     <div className="csbs-paper-subtitle">
                       {c.description || 'No description provided.'}
                     </div>
