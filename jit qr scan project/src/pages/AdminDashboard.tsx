@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import imageCompression from "browser-image-compression";
-import { compressPdfFile, formatFileSize } from '../utils/CompressFile';
+import { formatFileSize } from '../utils/CompressFile';
 import {
   LayoutDashboard,
   LogOut,
@@ -664,20 +664,17 @@ const UploadModal: React.FC<{
       }
 
       if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-        const { compressedFile, originalSize, compressedSize } = await compressPdfFile(
-          file,
-          (progress) => setCompressionProgress(progress)
-        );
-        if (compressedSize > 5 * 1024 * 1024) {
-          setUploadError('This PDF could not be compressed below 5 MB. Please upload a smaller PDF file.');
+        if (file.size > 5 * 1024 * 1024) {
+          setUploadError('This PDF exceeds the 5 MB upload limit. Please upload a smaller PDF file.');
           return null;
         }
+        setCompressionProgress(100);
         setPdfSizeInfo({
-          originalSize: formatFileSize(originalSize),
-          compressedSize: formatFileSize(compressedSize),
-          wasCompressed: originalSize > 5 * 1024 * 1024,
+          originalSize: formatFileSize(file.size),
+          compressedSize: formatFileSize(file.size),
+          wasCompressed: false,
         });
-        return compressedFile;
+        return file;
       }
 
       if (file.size <= 5 * 1024 * 1024) {
