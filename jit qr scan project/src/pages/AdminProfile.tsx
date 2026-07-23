@@ -165,23 +165,22 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ onBack }) => {
   const fetchProfile = async () => {
     try {
       const data = await profileService.getProfile();
-      setFullName(data.name);
-      setEmail(data.email);
-      setMobile(data.phone);
 
-      
+      setFullName(data.name || '');
+      setEmail(data.email || '');
+      setMobile(data.phone || '');
 
       setProfile({
-        fullName: data.name,
-        email: data.email,
-        mobile: data.phone,
+        fullName: data.name || '',
+        email: data.email || '',
+        mobile: data.phone || '',
         avatar: null,
         role: data.role || 'Admin',
         accountCreated: data.createdAt ? new Date(data.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '15 Jan 2026',
         lastLogin: data.lastLoginAt ? new Date(data.lastLoginAt).toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'Today, 10:00 AM',
         status: data.status || 'Active',
         lastUpdated: data.updatedAt ? new Date(data.updatedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '10 Jul 2026',
-        adminId: data.role === 'SuperAdmin' ? 'AD-2026-SUP' : 'AD-2026-001', // Using simulated ID based on role or fallback
+        adminId: data._id || (data.role === 'SuperAdmin' ? 'AD-2026-SUP' : 'AD-2026-001'),
         username: data.email ? data.email.split('@')[0] : 'admin'
       });
     } catch (err) {

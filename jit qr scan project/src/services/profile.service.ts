@@ -1,6 +1,7 @@
 import { apiClient } from './api';
 
-export interface AdminProfileResponse {
+export interface AdminProfile {
+  _id?: string;
   name: string;
   email: string;
   phone: string;
@@ -11,10 +12,15 @@ export interface AdminProfileResponse {
   updatedAt?: string;
 }
 
+export interface AdminProfileResponse {
+  message?: string;
+  admin: AdminProfile;
+}
+
 export const profileService = {
-  async getProfile(): Promise<AdminProfileResponse> {
+  async getProfile(): Promise<AdminProfile> {
     const response = await apiClient.get<AdminProfileResponse>('/admin/get/profile');
-    return response.data;
+    return response.data.admin || (response.data as unknown as AdminProfile);
   },
 
   async updateProfile(data: {
@@ -22,9 +28,9 @@ export const profileService = {
     email: string;
     password?: string;
     phone: string;
-  }): Promise<AdminProfileResponse> {
+  }): Promise<AdminProfile> {
     const response = await apiClient.put<AdminProfileResponse>('/admin/update/profile', data);
-    return response.data;
+    return response.data.admin || (response.data as unknown as AdminProfile);
   },
 
   async deleteProfile(): Promise<void> {
