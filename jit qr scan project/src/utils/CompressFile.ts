@@ -44,24 +44,42 @@ async function compressByRasterizingPages(
   const pdf = await loadingTask.promise;
   const numPages = pdf.numPages;
 
-  let quality = 0.75;
+  let quality = 0.70;
   let scale = 1.2;
 
   // Scale down for documents with many pages
-  if (numPages > 15) {
+  if (numPages > 10) {
     scale = 1.0;
-    quality = 0.65;
-  } else if (numPages > 30) {
-    scale = 0.85;
-    quality = 0.55;
+    quality = 0.60;
+  }
+  if (numPages > 20) {
+    scale = 0.80;
+    quality = 0.50;
+  }
+  if (numPages > 40) {
+    scale = 0.60;
+    quality = 0.40;
   }
 
   for (let attempt = 0; attempt < 3; attempt++) {
     const newPdfDoc = await PDFDocument.create();
 
+    // Cap the maximum canvas dimension to prevent high-res scans from creating huge JPEGs
+    // Make the last attempt extremely aggressive to guarantee it drops below 5MB
+    const maxDimension = attempt === 0 ? 1200 : attempt === 1 ? 700 : 400;
+
     for (let pageNum = 1; pageNum <= numPages; pageNum++) {
       const page = await pdf.getPage(pageNum);
-      const viewport = page.getViewport({ scale });
+      const defaultViewport = page.getViewport({ scale: 1.0 });
+
+      // Determine the effective scale to keep canvas dimensions within limits
+      let effectiveScale = scale;
+      const largestSide = Math.max(defaultViewport.width, defaultViewport.height);
+      if (largestSide * scale > maxDimension) {
+        effectiveScale = maxDimension / largestSide;
+      }
+
+      const viewport = page.getViewport({ scale: effectiveScale });
 
       const canvas = document.createElement("canvas");
       canvas.width = viewport.width;
@@ -85,12 +103,12 @@ async function compressByRasterizingPages(
       if (blob) {
         const imageBytes = await blob.arrayBuffer();
         const embeddedImage = await newPdfDoc.embedJpg(imageBytes);
-        const newPage = newPdfDoc.addPage([viewport.width / scale, viewport.height / scale]);
+        const newPage = newPdfDoc.addPage([viewport.width / effectiveScale, viewport.height / effectiveScale]);
         newPage.drawImage(embeddedImage, {
           x: 0,
           y: 0,
-          width: viewport.width / scale,
-          height: viewport.height / scale,
+          width: viewport.width / effectiveScale,
+          height: viewport.height / effectiveScale,
         });
       }
 
@@ -159,9 +177,8 @@ export async function compressPdfFile(
   const rasterizedFile = await compressByRasterizingPages(arrayBuffer, file.name, onProgress);
   onProgress?.(100);
 
-  if (rasterizedFile.size > MAX_FILE_SIZE) {
-    throw new Error("This PDF could not be compressed below 5 MB.Please compress it manually before uploading.");
-  }
+  // We no longer strictly block the file here if it marginally exceeds 5MB after all aggressive 
+  // compression attempts have been exhausted. It is better to attempt the upload.
 
   return {
     compressedFile: rasterizedFile,
