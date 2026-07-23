@@ -8,10 +8,10 @@
   --text-main: #1e293b;
   --text-muted: #475569;
   --primary-blue: #0A2540;
-  
-  --shadow-ambient: 0 4px 12px rgba(0,0,0,0.15);
-  --shadow-directional: 2px 8px 24px rgba(0,0,0,0.25);
-  --shadow-hover: 5px 15px 35px rgba(0,0,0,0.35);
+
+  --shadow-ambient: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-directional: 2px 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-hover: 5px 15px 35px rgba(0, 0, 0, 0.35);
 }
 
 body {
@@ -20,10 +20,13 @@ body {
 }
 
 .realistic-wall {
-  /* Subtle plaster/wall background */
-  background-color: #f1f5f9;
-  background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-  background-size: 20px 20px;
+  /* Realistic painted wall background with math formula texture and lighting */
+  background-color: #cfd8dc;
+  /* Professional grey-blue base */
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='400' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='rgba(0,0,0,0.08)' font-family='Georgia, serif' font-size='18' font-style='italic'%3E%3Ctext x='20' y='50'%3Ee%5E(i%CF%80) %2B 1 = 0%3C/text%3E%3Ctext x='200' y='100'%3Ea%C2%B2 %2B b%C2%B2 = c%C2%B2%3C/text%3E%3Ctext x='50' y='180'%3E%E2%88%AB e%5Ex dx = e%5Ex %2B C%3C/text%3E%3Ctext x='250' y='220'%3EF = ma%3C/text%3E%3Ctext x='100' y='280'%3EE = mc%C2%B2%3C/text%3E%3Ctext x='240' y='40'%3E%E2%88%87 %C3%97 E = -%E2%88%82B/%E2%88%82t%3C/text%3E%3Ctext x='30' y='120'%3Esin%C2%B2%CE%B8 %2B cos%C2%B2%CE%B8 = 1%3C/text%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.6) 0%, transparent 70%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.12'/%3E%3C/svg%3E");
   min-height: 100vh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: var(--text-main);
@@ -40,7 +43,7 @@ body {
   top: 0;
   z-index: 100;
   border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .nav-container {
@@ -65,7 +68,7 @@ body {
 .nav-logo {
   width: 40px;
   height: 40px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .nav-links {
@@ -92,7 +95,8 @@ body {
   justify-content: center;
   align-items: flex-start;
   padding: 60px 24px;
-  perspective: 1000px; /* For potential 3D depth */
+  perspective: 1000px;
+  /* For potential 3D depth */
 }
 
 /* The Wooden Frame */
@@ -100,13 +104,17 @@ body {
   max-width: 1200px;
   width: 100%;
   background: linear-gradient(135deg, var(--wood-light), var(--wood-dark));
-  padding: 20px; /* Frame thickness */
+  padding: 20px;
+  /* Frame thickness */
   border-radius: 12px;
-  box-shadow: 
-    0 25px 50px -12px rgba(0,0,0,0.5), /* Huge cast shadow on wall */
-    inset 0 2px 4px rgba(255,255,255,0.2), /* Frame highlight */
-    inset 0 -4px 8px rgba(0,0,0,0.4); /* Frame bottom shadow */
-    
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    /* Huge cast shadow on wall */
+    inset 0 2px 4px rgba(255, 255, 255, 0.2),
+    /* Frame highlight */
+    inset 0 -4px 8px rgba(0, 0, 0, 0.4);
+  /* Frame bottom shadow */
+
   opacity: 0;
   transform: translateY(20px);
 }
@@ -126,14 +134,15 @@ body {
 .notice-board-surface {
   background-color: var(--cork-main);
   /* A high-quality procedural cork texture using repeating gradients */
-  background-image: 
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 60%),
-    repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 60%),
+    repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
   border-radius: 4px;
-  box-shadow: 
-    inset 0 10px 20px rgba(0,0,0,0.6), /* Deep inner shadow for realism */
-    inset 0 -5px 10px rgba(0,0,0,0.2);
+  box-shadow:
+    inset 0 10px 20px rgba(0, 0, 0, 0.6),
+    /* Deep inner shadow for realism */
+    inset 0 -5px 10px rgba(0, 0, 0, 0.2);
   min-height: 700px;
   padding: 40px;
   display: flex;
@@ -153,7 +162,7 @@ body {
   box-shadow: var(--shadow-ambient), var(--shadow-directional);
   max-width: 600px;
   transform: rotate(-1deg);
-  
+
   opacity: 0;
   animation: noteFlyIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards;
 }
@@ -176,7 +185,7 @@ body {
   width: 50px;
   height: 50px;
   margin-bottom: 8px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 /* Pinned Notes Grid (Departments) */
@@ -198,13 +207,13 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  
+
   /* Initial State for Animation */
   opacity: 0;
   transform: translateY(30px) rotate(0deg);
   animation: noteFlyIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   animation-delay: var(--anim-delay);
-  
+
   /* Applying the idle rotation and position generated in TSX */
   /* We use a wrapper transition so the hover is smooth */
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
@@ -217,8 +226,9 @@ body {
   from {
     opacity: 0;
     transform: translateY(50px) scale(0.9) rotate(calc(var(--idle-rot) * 2));
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   }
+
   to {
     opacity: 1;
     transform: translateY(var(--idle-y)) rotate(var(--idle-rot)) scale(1);
@@ -275,7 +285,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding-top: 12px;
-  border-top: 1px solid rgba(0,0,0,0.05);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
   transition: color 0.3s;
 }
 
@@ -301,12 +311,20 @@ body {
   height: 16px;
   background: radial-gradient(circle at 30% 30%, #f1f5f9 0%, #94a3b8 40%, #475569 80%);
   border-radius: 50%;
-  box-shadow: 
-    -2px 4px 6px rgba(0,0,0,0.4),
-    inset -1px -1px 4px rgba(0,0,0,0.5);
+  box-shadow:
+    -2px 4px 6px rgba(0, 0, 0, 0.4),
+    inset -1px -1px 4px rgba(0, 0, 0, 0.5);
 }
-.pin.top-left { top: 12px; left: 12px; }
-.pin.top-right { top: 12px; right: 12px; }
+
+.pin.top-left {
+  top: 12px;
+  left: 12px;
+}
+
+.pin.top-right {
+  top: 12px;
+  right: 12px;
+}
 
 /* Complex Pin structure for notes */
 .pin-head {
@@ -316,9 +334,9 @@ body {
   border-radius: 50%;
   position: relative;
   z-index: 2;
-  box-shadow: 
-    inset -1px -1px 3px rgba(0,0,0,0.5),
-    inset 1px 1px 2px rgba(255,255,255,0.6);
+  box-shadow:
+    inset -1px -1px 3px rgba(0, 0, 0, 0.5),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.6);
 }
 
 .pin-shadow {
@@ -327,7 +345,7 @@ body {
   left: 6px;
   width: 3px;
   height: 12px;
-  background-color: rgba(0,0,0,0.3);
+  background-color: rgba(0, 0, 0, 0.3);
   transform: rotate(25deg);
   border-radius: 2px;
   z-index: 1;
@@ -339,7 +357,7 @@ body {
 .pinned-note:hover .pin-shadow {
   height: 16px;
   transform: rotate(35deg) translateX(-2px) translateY(2px);
-  background-color: rgba(0,0,0,0.2);
+  background-color: rgba(0, 0, 0, 0.2);
   filter: blur(2px);
 }
 
@@ -352,16 +370,17 @@ body {
 }
 
 .info-memo {
-  background-color: #fff8bd; /* Yellow sticky note */
+  background-color: #fff8bd;
+  /* Yellow sticky note */
   padding: 16px 20px;
   border-radius: 2px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1), 2px 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 2px 4px 12px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   gap: 16px;
   position: relative;
   transform: rotate(var(--memo-rot, 0deg));
-  
+
   opacity: 0;
   animation: noteFlyIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   animation-delay: var(--anim-delay);
@@ -381,16 +400,17 @@ body {
   transform: translateX(-50%) rotate(-2deg);
   width: 60px;
   height: 24px;
-  background-color: rgba(255,255,255,0.4);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border-left: 2px dashed rgba(0,0,0,0.05);
-  border-right: 2px dashed rgba(0,0,0,0.05);
+  background-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 2px dashed rgba(0, 0, 0, 0.05);
+  border-right: 2px dashed rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(2px);
   z-index: 10;
 }
 
 .memo-icon {
-  color: #d97706; /* warm orange for sticky notes */
+  color: #d97706;
+  /* warm orange for sticky notes */
   flex-shrink: 0;
 }
 
@@ -426,14 +446,17 @@ body {
   .pinned-notes-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .info-memos-container {
     flex-direction: column;
     align-items: center;
   }
+
   .info-memo {
     width: 100%;
     max-width: 400px;
   }
+
   .notice-board-surface {
     padding: 30px 20px;
   }
@@ -443,12 +466,15 @@ body {
   .pinned-notes-grid {
     grid-template-columns: 1fr;
   }
+
   .nav-links {
     display: none;
   }
+
   .board-header-note h1 {
     font-size: 1.6rem;
   }
+
   .notice-board-frame {
     padding: 10px;
   }

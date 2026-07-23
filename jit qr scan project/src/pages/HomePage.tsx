@@ -7,8 +7,6 @@ import {
   Radio,
   BrainCircuit,
   Wrench,
-  Zap,
-  Building,
   Briefcase,
   Bell,
   ShieldCheck,
@@ -39,19 +37,15 @@ const DEPARTMENTS = [
     icon: <Radio size={28} strokeWidth={1.5} />,
   },
   {
-    name: 'Electrical & Electronics Engineering',
-    route: '/eee',
-    icon: <Zap size={28} strokeWidth={1.5} />,
+    name: 'computer science and bussiness systems',
+    route: '/csbs',
+    icon: <Radio size={28} strokeWidth={1.5} />,
   },
+
   {
     name: 'Mechanical Engineering',
     route: '/mechanical',
     icon: <Wrench size={28} strokeWidth={1.5} />,
-  },
-  {
-    name: 'Civil Engineering',
-    route: '/civil',
-    icon: <Building size={28} strokeWidth={1.5} />,
   },
   {
     name: 'MBA',
@@ -85,7 +79,7 @@ const HomePage: React.FC = () => {
       />
       
       {/* Sleek Glass Navbar */}
-      <nav className="glass-navbar">
+      {/* <nav className="glass-navbar">
         <div className="nav-container">
           <Link to="/" className="nav-brand">
             <img src="/jitnotice.png" alt="JIT Logo" className="nav-logo" />
@@ -97,7 +91,7 @@ const HomePage: React.FC = () => {
             <Link to="/" className="nav-link">About</Link>
           </div>
         </div>
-      </nav>
+      </nav> */}
 
       {/* Main Notice Board Area */}
       <main className="board-environment">
