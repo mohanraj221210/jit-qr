@@ -37,7 +37,7 @@ const DEPARTMENTS = [
     icon: <Radio size={28} strokeWidth={1.5} />,
   },
   {
-    name: 'computer science and bussiness systems',
+    name: 'Computer Science and Business Systems',
     route: '/csbs',
     icon: <Radio size={28} strokeWidth={1.5} />,
   },
@@ -48,7 +48,7 @@ const DEPARTMENTS = [
     icon: <Wrench size={28} strokeWidth={1.5} />,
   },
   {
-    name: 'MBA',
+    name: 'Master of Business Administration',
     route: '/mba',
     icon: <Briefcase size={28} strokeWidth={1.5} />,
   },

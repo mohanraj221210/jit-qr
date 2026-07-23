@@ -30,7 +30,7 @@ import {
   Settings,
   Microscope,
   Award
-,  ZoomIn,
+  , ZoomIn,
   ZoomOut
 } from 'lucide-react';
 import { useCirculars } from '../../context/CircularContext';
@@ -144,7 +144,7 @@ const CSEDashboard: React.FC = () => {
       } else {
         alert('Sharing not supported on this browser.');
       }
-    } catch (err) {}
+    } catch (err) { }
   };
 
   const downloadFile = (file: string, name: string) => {
@@ -192,7 +192,7 @@ const CSEDashboard: React.FC = () => {
   return (
     <div className="cs-wrapper">
       <SEO title="CSE Department Notices | JIT" description="Digital Notice Board for Computer Science and Engineering Department at Jeppiaar Institute of Technology." />
-      
+
       {/* ────────────── TOP SIGNBOARD ────────────── */}
       <div className="cs-signboard-wood">
         <div className="cs-signboard-inner">
@@ -218,7 +218,7 @@ const CSEDashboard: React.FC = () => {
           <div className="cs-signboard-top">
             <img src="/jitnotice.png" alt="JIT Logo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
             <div style={{ textAlign: 'left' }}>
-              <h1 className="cs-sign-title">COMPUTER SCIENCE<br/>& ENGINEERING</h1>
+              <h1 className="cs-sign-title">COMPUTER SCIENCE<br />& ENGINEERING</h1>
               <div className="cs-sign-subtitle">DIGITAL NOTICE BOARD</div>
             </div>
           </div>
@@ -236,7 +236,7 @@ const CSEDashboard: React.FC = () => {
             <div className="cs-meta-divider" />
             <div className="cs-meta-item">
               <GraduationCap size={14} />
-              <span>Academic Year 2025 - 2026</span>
+              <span>Academic Year 2026 - 2027</span>
             </div>
           </div>
         </div>
@@ -279,7 +279,7 @@ const CSEDashboard: React.FC = () => {
           <>
             <div className="cs-sticky-note">
               <div className="cs-push-pin pin-red" style={{ top: -6 }} />
-              Code.<br/>Compile.<br/>Create.
+              Code.<br />Compile.<br />Create.
             </div>
             <div style={{ margin: 'auto', width: '100%', maxWidth: '340px' }}>
               <div className="cs-paper cs-torn-bottom">
@@ -288,7 +288,7 @@ const CSEDashboard: React.FC = () => {
                   <FileText size={48} strokeWidth={1.5} />
                 </div>
                 <h3 className="cs-paper-title" style={{ textAlign: 'center' }}>No notices found</h3>
-                <p className="cs-paper-subtitle" style={{ textAlign: 'center' }}>Try adjusting your search<br/>or category filter.</p>
+                <p className="cs-paper-subtitle" style={{ textAlign: 'center' }}>Try adjusting your search<br />or category filter.</p>
               </div>
             </div>
             <div className="cs-bottom-strip cs-torn-top cs-torn-bottom">
@@ -310,52 +310,52 @@ const CSEDashboard: React.FC = () => {
         ) : (
           <>
             <div className="cs-papers-grid">
-            {paginatedCirculars.map((c) => {
-              const rot = getRotation(c.id);
-              const prio = getPriority(c);
-              const expires = formatDistanceToNow(new Date(c.expiryDate), { addSuffix: true });
+              {paginatedCirculars.map((c) => {
+                const rot = getRotation(c.id);
+                const prio = getPriority(c);
+                const expires = formatDistanceToNow(new Date(c.expiryDate), { addSuffix: true });
 
-              return (
-                <div
-                  key={c.id}
-                  className="cs-paper cs-torn-bottom"
-                  style={{ transform: `rotate(${rot}deg)` }}
-                  onClick={() => setSelectedNotice(c)}
-                >
-                  <div className={`cs-push-pin pin-${prio === 'urgent' ? 'red' : prio === 'important' ? 'orange' : 'blue'}`} />
-                  
-                  {/* Priority Ribbon */}
-                  {prio !== 'normal' && (
-                    <div className={`cs-ribbon ${prio}`}>
-                      {prio}
+                return (
+                  <div
+                    key={c.id}
+                    className="cs-paper cs-torn-bottom"
+                    style={{ transform: `rotate(${rot}deg)` }}
+                    onClick={() => setSelectedNotice(c)}
+                  >
+                    <div className={`cs-push-pin pin-${prio === 'urgent' ? 'red' : prio === 'important' ? 'orange' : 'blue'}`} />
+
+                    {/* Priority Ribbon */}
+                    {prio !== 'normal' && (
+                      <div className={`cs-ribbon ${prio}`}>
+                        {prio}
+                      </div>
+                    )}
+
+                    <a href={`/notice/${slugify(c.title || 'notice', { lower: true, strict: true })}-${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); setSelectedNotice(c); }}><h3 className="cs-paper-title">{c.title}</h3></a>
+                    <div className="cs-paper-subtitle">
+                      {c.description || 'No description provided.'}
                     </div>
-                  )}
 
-                  <a href={`/notice/${slugify(c.title || 'notice', { lower: true, strict: true })}-${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); setSelectedNotice(c); }}><h3 className="cs-paper-title">{c.title}</h3></a>
-                  <div className="cs-paper-subtitle">
-                    {c.description || 'No description provided.'}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#9CA3AF', borderTop: '1px dashed #E5E7EB', paddingTop: 8, marginTop: 16 }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={12} /> {format(new Date(c.uploadDate), 'MMM dd')}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={12} /> Exp {expires}</span>
+                    </div>
                   </div>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#9CA3AF', borderTop: '1px dashed #E5E7EB', paddingTop: 8, marginTop: 16 }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={12}/> {format(new Date(c.uploadDate), 'MMM dd')}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={12}/> Exp {expires}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {currentPage < totalPages && (
-            <div ref={observerRef} className="cs-pagination-sentinel" style={{ height: '40px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0' }}>
-              <div className="spinner sm" style={{ borderTopColor: 'var(--text-dark, #333)' }}></div>
+                );
+              })}
             </div>
-          )}
-        </>
-      )}
-    </main>
+
+            {currentPage < totalPages && (
+              <div ref={observerRef} className="cs-pagination-sentinel" style={{ height: '40px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0' }}>
+                <div className="spinner sm" style={{ borderTopColor: 'var(--text-dark, #333)' }}></div>
+              </div>
+            )}
+          </>
+        )}
+      </main>
 
       {/* ────────────── FOOTER ────────────── */}
-      
+
 
       {/* ────────────── NOTICE MODAL ────────────── */}
       {selectedNotice && (
@@ -372,9 +372,9 @@ const CSEDashboard: React.FC = () => {
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={14} /> Exp: {format(new Date(selectedNotice.expiryDate), 'MMM dd')}</span>
               </div>
             </div>
-            
+
             {selectedNotice.posterImage && (
-              <div 
+              <div
                 onClick={() => openViewer(selectedNotice.posterImage!, 'image')}
                 style={{ cursor: 'pointer', marginBottom: 20, textAlign: 'center', borderRadius: 6, overflow: 'hidden', border: '1px solid #E5E7EB', backgroundColor: '#f9fafb' }}
                 title="Click to view fullscreen"
@@ -417,7 +417,7 @@ const CSEDashboard: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {/* ────────────── UNIFIED FILE VIEWER MODAL ────────────── */}
       {viewingFile && (
         <div className="pdf-viewer-overlay" onClick={() => { setViewingFile(null); setZoomScale(1); }}>
@@ -425,8 +425,8 @@ const CSEDashboard: React.FC = () => {
             <div className="pdf-viewer-header">
               <h3>${viewingFile.type === 'image' ? 'Circular Image' : 'Circular Document'}</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button 
-                  className="pdf-viewer-close" 
+                <button
+                  className="pdf-viewer-close"
                   onClick={() => setZoomScale(prev => Math.max(prev - 0.25, 0.5))}
                   title="Zoom Out"
                   style={{ marginRight: '4px' }}
@@ -436,16 +436,16 @@ const CSEDashboard: React.FC = () => {
                 <span style={{ fontSize: '13px', fontWeight: 600, minWidth: '40px', textAlign: 'center' }}>
                   ${Math.round(zoomScale * 100)}%
                 </span>
-                <button 
-                  className="pdf-viewer-close" 
+                <button
+                  className="pdf-viewer-close"
                   onClick={() => setZoomScale(prev => Math.min(prev + 0.25, 3))}
                   title="Zoom In"
                   style={{ marginRight: '16px' }}
                 >
                   <ZoomIn size={18} />
                 </button>
-                <button 
-                  className="pdf-viewer-close" 
+                <button
+                  className="pdf-viewer-close"
                   onClick={() => setZoomScale(1)}
                   title="Reset Zoom"
                   style={{ marginRight: '16px' }}
@@ -459,13 +459,13 @@ const CSEDashboard: React.FC = () => {
             </div>
             <div className="pdf-viewer-body" style={{ overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
               ${viewingFile.type === 'image' ? (
-                <div style={{ 
-                  overflow: 'auto', 
-                  width: '100%', 
-                  height: '100%', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center' 
+                <div style={{
+                  overflow: 'auto',
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}>
                   <img
                     src={viewingFile.url}
@@ -481,9 +481,9 @@ const CSEDashboard: React.FC = () => {
                   />
                 </div>
               ) : (
-                <div style={{ 
-                  width: '100%', 
-                  height: '100%', 
+                <div style={{
+                  width: '100%',
+                  height: '100%',
                   transform: `scale(${zoomScale})`,
                   transformOrigin: 'top center',
                   transition: 'transform 0.2s ease'
@@ -501,7 +501,7 @@ const CSEDashboard: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }

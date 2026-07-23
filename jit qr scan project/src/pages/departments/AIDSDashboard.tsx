@@ -27,7 +27,7 @@ import {
   Settings,
   Microscope,
   Award
-,  ZoomIn,
+  , ZoomIn,
   ZoomOut
 } from 'lucide-react';
 import { useCirculars } from '../../context/CircularContext';
@@ -139,7 +139,7 @@ const AIDSDashboard: React.FC = () => {
       } else {
         alert('Sharing not supported on this browser.');
       }
-    } catch (err) {}
+    } catch (err) { }
   };
 
   const downloadFile = (file: string, name: string) => {
@@ -187,7 +187,7 @@ const AIDSDashboard: React.FC = () => {
   return (
     <div className="ai-wrapper">
       <SEO title="AI&DS Department Notices | JIT" description="Digital Notice Board for Artificial Intelligence and Data Science Department at Jeppiaar Institute of Technology." />
-      
+
       {/* ────────────── TOP SIGNBOARD ────────────── */}
       <div className="ai-signboard-wood">
         <div className="ai-signboard-inner">
@@ -227,7 +227,7 @@ const AIDSDashboard: React.FC = () => {
             <div className="ai-meta-divider" />
             <div className="ai-meta-item">
               <GraduationCap size={14} />
-              <span>Academic Year 2025 - 2026</span>
+              <span>Academic Year 2026 - 2027</span>
             </div>
           </div>
         </div>
@@ -270,7 +270,7 @@ const AIDSDashboard: React.FC = () => {
           <>
             <div className="ai-sticky-note">
               <div className="ai-push-pin pin-red" style={{ top: -6 }} />
-              Keep Learning<br/>🚀
+              Keep Learning<br />🚀
             </div>
             <div style={{ margin: 'auto', width: '100%', maxWidth: '340px' }}>
               <div className="ai-paper ai-torn-bottom">
@@ -279,7 +279,7 @@ const AIDSDashboard: React.FC = () => {
                   <FileText size={48} strokeWidth={1.5} />
                 </div>
                 <h3 className="ai-paper-title">No notices found</h3>
-                <p className="ai-paper-subtitle">Try adjusting your search<br/>or category filter.</p>
+                <p className="ai-paper-subtitle">Try adjusting your search<br />or category filter.</p>
               </div>
             </div>
             <div className="ai-bottom-strip ai-torn-top ai-torn-bottom">
@@ -301,45 +301,45 @@ const AIDSDashboard: React.FC = () => {
         ) : (
           <>
             <div className="ai-papers-grid">
-            {paginatedCirculars.map((c) => {
-              const rot = getRotation(c.id);
-              const prio = getPriority(c);
-              const expires = formatDistanceToNow(new Date(c.expiryDate), { addSuffix: true });
+              {paginatedCirculars.map((c) => {
+                const rot = getRotation(c.id);
+                const prio = getPriority(c);
+                const expires = formatDistanceToNow(new Date(c.expiryDate), { addSuffix: true });
 
-              return (
-                <div
-                  key={c.id}
-                  className="ai-paper ai-torn-bottom"
-                  style={{ transform: `rotate(${rot}deg)` }}
-                  onClick={() => setSelectedNotice(c)}
-                >
-                  <div className={`ai-push-pin pin-${prio === 'urgent' ? 'red' : prio === 'important' ? 'purple' : 'cyan'}`} />
-                  
-                  <a href={`/notice/${slugify(c.title || 'notice', { lower: true, strict: true })}-${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); setSelectedNotice(c); }}><h3 className="ai-paper-title" style={{ textAlign: 'left', marginTop: 16 }}>{c.title}</h3></a>
-                  <div className="ai-paper-subtitle" style={{ textAlign: 'left', marginBottom: 16, display: '-webkit-box', WebkitLineClamp: 3, lineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {c.description || 'No description provided.'}
-                  </div>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#9CA3AF', borderTop: '1px dashed #E5E7EB', paddingTop: 8 }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={12}/> {format(new Date(c.uploadDate), 'MMM dd')}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={12}/> Exp {expires}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                return (
+                  <div
+                    key={c.id}
+                    className="ai-paper ai-torn-bottom"
+                    style={{ transform: `rotate(${rot}deg)` }}
+                    onClick={() => setSelectedNotice(c)}
+                  >
+                    <div className={`ai-push-pin pin-${prio === 'urgent' ? 'red' : prio === 'important' ? 'purple' : 'cyan'}`} />
 
-          {currentPage < totalPages && (
-            <div ref={observerRef} className="ai-pagination-sentinel" style={{ height: '40px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0' }}>
-              <div className="spinner sm" style={{ borderTopColor: 'var(--text-dark, #333)' }}></div>
+                    <a href={`/notice/${slugify(c.title || 'notice', { lower: true, strict: true })}-${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); setSelectedNotice(c); }}><h3 className="ai-paper-title" style={{ textAlign: 'left', marginTop: 16 }}>{c.title}</h3></a>
+                    <div className="ai-paper-subtitle" style={{ textAlign: 'left', marginBottom: 16, display: '-webkit-box', WebkitLineClamp: 3, lineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {c.description || 'No description provided.'}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#9CA3AF', borderTop: '1px dashed #E5E7EB', paddingTop: 8 }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={12} /> {format(new Date(c.uploadDate), 'MMM dd')}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={12} /> Exp {expires}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
-        </>
-      )}
-    </main>
+
+            {currentPage < totalPages && (
+              <div ref={observerRef} className="ai-pagination-sentinel" style={{ height: '40px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0' }}>
+                <div className="spinner sm" style={{ borderTopColor: 'var(--text-dark, #333)' }}></div>
+              </div>
+            )}
+          </>
+        )}
+      </main>
 
       {/* ────────────── FOOTER ────────────── */}
-      
+
 
       {/* ────────────── NOTICE MODAL ────────────── */}
       {selectedNotice && (
@@ -357,7 +357,7 @@ const AIDSDashboard: React.FC = () => {
               </div>
             </div>
             {selectedNotice.posterImage && (
-              <div 
+              <div
                 onClick={() => openViewer(selectedNotice.posterImage!, 'image')}
                 style={{ cursor: 'pointer', marginBottom: 20, textAlign: 'center', borderRadius: 6, overflow: 'hidden', border: '1px solid #E5E7EB', backgroundColor: '#f9fafb' }}
                 title="Click to view fullscreen"
@@ -372,7 +372,7 @@ const AIDSDashboard: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             <div style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--ai-text-dark)', marginBottom: 24, whiteSpace: 'pre-wrap' }}>
               {selectedNotice.description}
             </div>
@@ -400,7 +400,7 @@ const AIDSDashboard: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {/* ────────────── UNIFIED FILE VIEWER MODAL ────────────── */}
       {viewingFile && (
         <div className="pdf-viewer-overlay" onClick={() => { setViewingFile(null); setZoomScale(1); }}>
@@ -408,8 +408,8 @@ const AIDSDashboard: React.FC = () => {
             <div className="pdf-viewer-header">
               <h3>${viewingFile.type === 'image' ? 'Circular Image' : 'Circular Document'}</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button 
-                  className="pdf-viewer-close" 
+                <button
+                  className="pdf-viewer-close"
                   onClick={() => setZoomScale(prev => Math.max(prev - 0.25, 0.5))}
                   title="Zoom Out"
                   style={{ marginRight: '4px' }}
@@ -419,16 +419,16 @@ const AIDSDashboard: React.FC = () => {
                 <span style={{ fontSize: '13px', fontWeight: 600, minWidth: '40px', textAlign: 'center' }}>
                   ${Math.round(zoomScale * 100)}%
                 </span>
-                <button 
-                  className="pdf-viewer-close" 
+                <button
+                  className="pdf-viewer-close"
                   onClick={() => setZoomScale(prev => Math.min(prev + 0.25, 3))}
                   title="Zoom In"
                   style={{ marginRight: '16px' }}
                 >
                   <ZoomIn size={18} />
                 </button>
-                <button 
-                  className="pdf-viewer-close" 
+                <button
+                  className="pdf-viewer-close"
                   onClick={() => setZoomScale(1)}
                   title="Reset Zoom"
                   style={{ marginRight: '16px' }}
@@ -442,13 +442,13 @@ const AIDSDashboard: React.FC = () => {
             </div>
             <div className="pdf-viewer-body" style={{ overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
               ${viewingFile.type === 'image' ? (
-                <div style={{ 
-                  overflow: 'auto', 
-                  width: '100%', 
-                  height: '100%', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center' 
+                <div style={{
+                  overflow: 'auto',
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}>
                   <img
                     src={viewingFile.url}
@@ -464,9 +464,9 @@ const AIDSDashboard: React.FC = () => {
                   />
                 </div>
               ) : (
-                <div style={{ 
-                  width: '100%', 
-                  height: '100%', 
+                <div style={{
+                  width: '100%',
+                  height: '100%',
                   transform: `scale(${zoomScale})`,
                   transformOrigin: 'top center',
                   transition: 'transform 0.2s ease'
@@ -484,7 +484,7 @@ const AIDSDashboard: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }

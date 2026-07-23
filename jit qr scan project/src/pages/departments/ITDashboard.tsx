@@ -130,7 +130,7 @@ const ITDashboard: React.FC = () => {
       } else {
         alert('Sharing not supported on this browser.');
       }
-    } catch (err) {}
+    } catch (err) { }
   };
 
   const downloadFile = (file: string, name: string) => {
@@ -178,7 +178,7 @@ const ITDashboard: React.FC = () => {
   return (
     <div className="it-wrapper">
       <SEO title="Information Technology Notices | JIT" description="Digital Notice Board for Information Technology Department at Jeppiaar Institute of Technology." />
-      
+
       {/* ────────────── TOP SIGNBOARD ────────────── */}
       <div className="it-signboard-wood">
         <div className="it-signboard-inner">
@@ -196,8 +196,8 @@ const ITDashboard: React.FC = () => {
           <Database className="it-sign-bg-icon" size={16} style={{ bottom: 10, right: 60 }} />
 
           <div className="it-signboard-top">
-            
-              <img src="/jitnotice.png" alt="JIT Permigo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
+
+            <img src="/jitnotice.png" alt="JIT Permigo" style={{ width: '90px', height: '90px', objectFit: 'contain', borderRadius: '4px' }} />
             <div style={{ textAlign: 'left' }}>
               <h1 className="it-sign-title">IT DEPARTMENT</h1>
               <div className="it-sign-subtitle">DIGITAL NOTICE BOARD</div>
@@ -217,7 +217,7 @@ const ITDashboard: React.FC = () => {
             <div className="it-meta-divider" />
             <div className="it-meta-item">
               <GraduationCap size={14} />
-              <span>Academic Year 2025 - 2026</span>
+              <span>Academic Year 2026 - 2027</span>
             </div>
           </div>
         </div>
@@ -260,7 +260,7 @@ const ITDashboard: React.FC = () => {
           <>
             <div className="it-sticky-note">
               <div className="it-push-pin pin-red" style={{ top: -6 }} />
-              Stay Updated<br/>Stay Ahead!
+              Stay Updated<br />Stay Ahead!
             </div>
             <div style={{ margin: 'auto', width: '100%', maxWidth: '340px' }}>
               <div className="it-paper it-torn-bottom" style={{ backgroundColor: 'white', border: '1px solid #ddd', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
@@ -269,7 +269,7 @@ const ITDashboard: React.FC = () => {
                   <FileText size={48} strokeWidth={1.5} />
                 </div>
                 <h3 className="it-paper-title">No notices found</h3>
-                <p className="it-paper-subtitle">Try adjusting your search<br/>or category filter.</p>
+                <p className="it-paper-subtitle">Try adjusting your search<br />or category filter.</p>
               </div>
             </div>
             <div className="it-bottom-strip it-torn-top it-torn-bottom">
@@ -291,45 +291,45 @@ const ITDashboard: React.FC = () => {
         ) : (
           <>
             <div className="it-papers-grid">
-            {paginatedCirculars.map((c) => {
-              const rot = getRotation(c.id);
-              const prio = getPriority(c);
-              const expires = formatDistanceToNow(new Date(c.expiryDate), { addSuffix: true });
+              {paginatedCirculars.map((c) => {
+                const rot = getRotation(c.id);
+                const prio = getPriority(c);
+                const expires = formatDistanceToNow(new Date(c.expiryDate), { addSuffix: true });
 
-              return (
-                <div
-                  key={c.id}
-                  className="it-paper it-torn-bottom"
-                  style={{ transform: `rotate(${rot}deg)` }}
-                  onClick={() => setSelectedNotice(c)}
-                >
-                  <div className={`it-push-pin pin-${prio === 'urgent' ? 'red' : prio === 'important' ? 'green' : 'blue'}`} />
-                  
-                  <a href={`/notice/${slugify(c.title || 'notice', { lower: true, strict: true })}-${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); setSelectedNotice(c); }}><h3 className="it-paper-title" style={{ textAlign: 'left', marginTop: 16 }}>{c.title}</h3></a>
-                  <div className="it-paper-subtitle" style={{ textAlign: 'left', marginBottom: 16, display: '-webkit-box', WebkitLineClamp: 3, lineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {c.description || 'No description provided.'}
-                  </div>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#9CA3AF', borderTop: '1px dashed #E5E7EB', paddingTop: 8 }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={12}/> {format(new Date(c.uploadDate), 'MMM dd')}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={12}/> Exp {expires}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                return (
+                  <div
+                    key={c.id}
+                    className="it-paper it-torn-bottom"
+                    style={{ transform: `rotate(${rot}deg)` }}
+                    onClick={() => setSelectedNotice(c)}
+                  >
+                    <div className={`it-push-pin pin-${prio === 'urgent' ? 'red' : prio === 'important' ? 'green' : 'blue'}`} />
 
-          {currentPage < totalPages && (
-            <div ref={observerRef} className="it-pagination-sentinel" style={{ height: '40px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0' }}>
-              <div className="spinner sm" style={{ borderTopColor: 'var(--text-dark, #333)' }}></div>
+                    <a href={`/notice/${slugify(c.title || 'notice', { lower: true, strict: true })}-${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); setSelectedNotice(c); }}><h3 className="it-paper-title" style={{ textAlign: 'left', marginTop: 16 }}>{c.title}</h3></a>
+                    <div className="it-paper-subtitle" style={{ textAlign: 'left', marginBottom: 16, display: '-webkit-box', WebkitLineClamp: 3, lineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {c.description || 'No description provided.'}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#9CA3AF', borderTop: '1px dashed #E5E7EB', paddingTop: 8 }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={12} /> {format(new Date(c.uploadDate), 'MMM dd')}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={12} /> Exp {expires}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
-        </>
-      )}
-    </main>
+
+            {currentPage < totalPages && (
+              <div ref={observerRef} className="it-pagination-sentinel" style={{ height: '40px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0' }}>
+                <div className="spinner sm" style={{ borderTopColor: 'var(--text-dark, #333)' }}></div>
+              </div>
+            )}
+          </>
+        )}
+      </main>
 
       {/* ────────────── FOOTER ────────────── */}
-      
+
 
       {/* ────────────── NOTICE MODAL ────────────── */}
       {selectedNotice && (
@@ -346,9 +346,9 @@ const ITDashboard: React.FC = () => {
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={14} /> Exp: {format(new Date(selectedNotice.expiryDate), 'MMM dd')}</span>
               </div>
             </div>
-            
+
             {selectedNotice.posterImage && (
-              <div 
+              <div
                 onClick={() => openViewer(selectedNotice.posterImage!, 'image')}
                 style={{ cursor: 'pointer', marginBottom: 20, textAlign: 'center', borderRadius: 6, overflow: 'hidden', border: '1px solid #E5E7EB', backgroundColor: '#f9fafb' }}
                 title="Click to view fullscreen"
@@ -396,7 +396,7 @@ const ITDashboard: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {/* ────────────── UNIFIED FILE VIEWER MODAL ────────────── */}
       {viewingFile && (
         <div className="pdf-viewer-overlay" onClick={() => { setViewingFile(null); setZoomScale(1); }}>
@@ -404,8 +404,8 @@ const ITDashboard: React.FC = () => {
             <div className="pdf-viewer-header">
               <h3>{viewingFile.type === 'image' ? 'Circular Image' : 'Circular Document'}</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button 
-                  className="pdf-viewer-close" 
+                <button
+                  className="pdf-viewer-close"
                   onClick={() => setZoomScale(prev => Math.max(prev - 0.25, 0.5))}
                   title="Zoom Out"
                   style={{ marginRight: '4px' }}
@@ -415,16 +415,16 @@ const ITDashboard: React.FC = () => {
                 <span style={{ fontSize: '13px', fontWeight: 600, minWidth: '40px', textAlign: 'center' }}>
                   {Math.round(zoomScale * 100)}%
                 </span>
-                <button 
-                  className="pdf-viewer-close" 
+                <button
+                  className="pdf-viewer-close"
                   onClick={() => setZoomScale(prev => Math.min(prev + 0.25, 3))}
                   title="Zoom In"
                   style={{ marginRight: '16px' }}
                 >
                   <ZoomIn size={18} />
                 </button>
-                <button 
-                  className="pdf-viewer-close" 
+                <button
+                  className="pdf-viewer-close"
                   onClick={() => setZoomScale(1)}
                   title="Reset Zoom"
                   style={{ marginRight: '16px' }}
@@ -438,13 +438,13 @@ const ITDashboard: React.FC = () => {
             </div>
             <div className="pdf-viewer-body" style={{ overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
               {viewingFile.type === 'image' ? (
-                <div style={{ 
-                  overflow: 'auto', 
-                  width: '100%', 
-                  height: '100%', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center' 
+                <div style={{
+                  overflow: 'auto',
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}>
                   <img
                     src={viewingFile.url}
@@ -460,9 +460,9 @@ const ITDashboard: React.FC = () => {
                   />
                 </div>
               ) : (
-                <div style={{ 
-                  width: '100%', 
-                  height: '100%', 
+                <div style={{
+                  width: '100%',
+                  height: '100%',
                   transform: `scale(${zoomScale})`,
                   transformOrigin: 'top center',
                   transition: 'transform 0.2s ease'
@@ -480,7 +480,7 @@ const ITDashboard: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
@@ -495,5 +495,5 @@ const ITDashboard: React.FC = () => {
 export default ITDashboard;
 
 function GraduationCap(props: any) {
-  return <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size} height={props.size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>;
+  return <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size} height={props.size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>;
 }

@@ -235,7 +235,7 @@ const CSBSDashboard: React.FC = () => {
             <div className="csbs-meta-divider" />
             <div className="csbs-meta-item">
               <GraduationCap size={14} />
-              <span>Academic Year 2025 - 2026</span>
+              <span>Academic Year 2026 - 2027</span>
             </div>
           </div>
         </div>
@@ -382,7 +382,7 @@ const CSBSDashboard: React.FC = () => {
             </div>
 
             {selectedNotice.posterImage && (
-              <div 
+              <div
                 onClick={() => openViewer(selectedNotice.posterImage!, 'image')}
                 style={{ cursor: 'pointer', marginBottom: 20, textAlign: 'center', borderRadius: 6, overflow: 'hidden', border: '1px solid #E5E7EB', backgroundColor: '#f9fafb' }}
                 title="Click to view fullscreen"
@@ -433,8 +433,8 @@ const CSBSDashboard: React.FC = () => {
             <div className="pdf-viewer-header">
               <h3>${viewingFile.type === 'image' ? 'Circular Image' : 'Circular Document'}</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button 
-                  className="pdf-viewer-close" 
+                <button
+                  className="pdf-viewer-close"
                   onClick={() => setZoomScale(prev => Math.max(prev - 0.25, 0.5))}
                   title="Zoom Out"
                   style={{ marginRight: '4px' }}
@@ -444,16 +444,16 @@ const CSBSDashboard: React.FC = () => {
                 <span style={{ fontSize: '13px', fontWeight: 600, minWidth: '40px', textAlign: 'center' }}>
                   ${Math.round(zoomScale * 100)}%
                 </span>
-                <button 
-                  className="pdf-viewer-close" 
+                <button
+                  className="pdf-viewer-close"
                   onClick={() => setZoomScale(prev => Math.min(prev + 0.25, 3))}
                   title="Zoom In"
                   style={{ marginRight: '16px' }}
                 >
                   <ZoomIn size={18} />
                 </button>
-                <button 
-                  className="pdf-viewer-close" 
+                <button
+                  className="pdf-viewer-close"
                   onClick={() => setZoomScale(1)}
                   title="Reset Zoom"
                   style={{ marginRight: '16px' }}
@@ -467,13 +467,13 @@ const CSBSDashboard: React.FC = () => {
             </div>
             <div className="pdf-viewer-body" style={{ overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
               ${viewingFile.type === 'image' ? (
-                <div style={{ 
-                  overflow: 'auto', 
-                  width: '100%', 
-                  height: '100%', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center' 
+                <div style={{
+                  overflow: 'auto',
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}>
                   <img
                     src={viewingFile.url}
@@ -489,9 +489,9 @@ const CSBSDashboard: React.FC = () => {
                   />
                 </div>
               ) : (
-                <div style={{ 
-                  width: '100%', 
-                  height: '100%', 
+                <div style={{
+                  width: '100%',
+                  height: '100%',
                   transform: `scale(${zoomScale})`,
                   transformOrigin: 'top center',
                   transition: 'transform 0.2s ease'
@@ -509,7 +509,7 @@ const CSBSDashboard: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
